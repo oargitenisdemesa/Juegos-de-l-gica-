@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sudoku · Juego de lógica</title>
+<style>
+:root{--bg:#f1ede4;--panel:#fffdf8;--ink:#1d2b2a;--mute:#6b7773;--line:#cfc8b8;--thick:#1d2b2a;--accent:#b4532a;--sel:#f3d9c4;--peer:#f6efe3;--bad:#c0291e;--ok:#1f7a45;--given:#1d2b2a;--mine:#2457a6}
+@media (prefers-color-scheme:dark){:root{--bg:#14191a;--panel:#1c2425;--ink:#e8ece9;--mute:#8d9a96;--line:#364140;--thick:#9fb0aa;--accent:#e0865a;--sel:#4a3326;--peer:#243031;--bad:#ff6b5e;--ok:#5fcf8c;--given:#e8ece9;--mine:#7fb0ff}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 Georgia,serif;display:flex;justify-content:center}
+main{width:100%;max-width:440px;padding:14px 12px 40px}
+h1{font-size:1.7rem;margin:4px 0 12px}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+select,button{font:inherit;color:var(--ink);background:var(--panel);border:1.5px solid var(--line);border-radius:8px;padding:8px 12px;cursor:pointer}
+button:disabled{opacity:.4;cursor:default}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.chk{display:flex;gap:6px;align-items:center;cursor:pointer}
+.stats{display:flex;gap:16px;background:var(--panel);border:1.5px solid var(--line);border-radius:10px;padding:8px 14px;margin-bottom:10px;font-size:.9rem;color:var(--mute)}
+.stats b{display:block;font-size:1.2rem;color:var(--ink)}
+#timer{margin-left:auto;text-align:right}#timer.low b{color:var(--bad)}
+#grid{display:grid;grid-template-columns:repeat(9,1fr);border:3px solid var(--thick);background:var(--panel);aspect-ratio:1}
+.c{display:flex;align-items:center;justify-content:center;border:0;border-right:1px solid var(--line);border-bottom:1px solid var(--line);border-radius:0;padding:0;background:var(--panel);font:clamp(18px,6vw,26px) Georgia,serif;color:var(--mine);position:relative}
+.c:nth-child(3n){border-right:2px solid var(--thick)}
+.c:nth-child(9n){border-right:0}
+.c:nth-child(n+19):nth-child(-n+27),.c:nth-child(n+46):nth-child(-n+54){border-bottom:2px solid var(--thick)}
+.c.g{color:var(--given);font-weight:bold}
+.c.p{background:var(--peer)}
+.c.s{background:var(--sel)}
+.c.e{color:var(--bad)}
+.c.h{animation:pop .5s}
+@keyframes pop{50%{transform:scale(1.15)}}
+@media (prefers-reduced-motion:reduce){.c.h{animation:none}}
+.nt{position:absolute;inset:1px;display:grid;grid-template-columns:repeat(3,1fr);font-size:clamp(7px,2.2vw,10px);color:var(--mute);line-height:1;pointer-events:none}
+.nt i{font-style:normal;display:flex;align-items:center;justify-content:center}
+#pad{display:grid;grid-template-columns:repeat(9,1fr);gap:5px;margin-top:12px}
+#pad button{padding:10px 0;font-size:1.2rem}
+.act{display:flex;gap:8px;margin-top:8px}
+.act button{flex:1}
+.act button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+#msg{min-height:1.6em;text-align:center;margin-top:12px;font-weight:bold}
+#msg.win{color:var(--ok)}#msg.lose{color:var(--bad)}
+.help{color:var(--mute);font-size:.88rem;margin-top:14px}
+</style>
+</head>
+<body>
+<main>
+<p style="margin:0 0 4px"><a href="index.html" style="color:inherit">‹ Todos los juegos</a></p>
+<h1>Sudoku</h1>
+<div class="bar">
+  <select id="lvl" aria-label="Nivel">
+    <option value="38">Fácil</option>
+    <option value="31" selected>Medio</option>
+    <option value="26">Difícil</option>
+  </select>
+  <label class="chk"><input type="checkbox" id="rel"> Contrarreloj</label>
+  <button id="new">Nueva partida</button>
+</div>
+<div class="stats" aria-live="polite">
+  <div><b id="sw">0</b>ganadas</div>
+  <div><b id="sl">0</b>perdidas</div>
+  <div><b id="sb">–</b>mejor tiempo</div>
+  <div id="timer"><b id="tt">0:00</b><span id="tl">tiempo</span></div>
+</div>
+<div id="grid" role="grid" aria-label="Tablero de sudoku"></div>
+<div id="pad"></div>
+<div class="act">
+  <button id="note">Notas</button>
+  <button id="del">Borrar</button>
+  <button id="hint">Pista (<span id="hc">3</span>)</button>
+</div>
+<p id="msg" role="status"></p>
+<p class="help">Rellena la cuadrícula para que cada fila, columna y bloque de 3×3 tenga los números del 1 al 9 sin repetir.
+Los errores se marcan en rojo. Con teclado: flechas, 1–9 y Retroceso.</p>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const sh=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+let sol,giv,val,notes,sel,over,noteMode,hints,secs,tick,errs;
+let st={w:0,l:0,best:{}};
+try{const s=JSON.parse(localStorage.getItem("sudoku-lg")||"null");if(s)st=Object.assign(st,s)}catch(e){}
+const save=()=>{try{localStorage.setItem("sudoku-lg",JSON.stringify(st))}catch(e){}};
+
+function ok(b,i,n){const r=Math.floor(i/9),c=i%9;
+  for(let k=0;k<9;k++){if(b[r*9+k]===n||b[k*9+c]===n)return false}
+  const br=r-r%3,bc=c-c%3;
+  for(let y=0;y<3;y++)for(let x=0;x<3;x++)if(b[(br+y)*9+bc+x]===n)return false;
+  return true}
+function fill(b){const i=b.indexOf(0);if(i<0)return true;
+  for(const n of sh([1,2,3,4,5,6,7,8,9]))if(ok(b,i,n)){b[i]=n;if(fill(b))return true;b[i]=0}
+  return false}
+function count(b,lim){let i=b.indexOf(0);if(i<0)return 1;let t=0;
+  for(let n=1;n<=9&&t<lim;n++)if(ok(b,i,n)){b[i]=n;t+=count(b,lim-t);b[i]=0}
+  return t}
+function make(clues){
+  const s=Array(81).fill(0);fill(s);const p=[...s];
+  for(const i of sh([...Array(81).keys()])){
+    if(p.filter(x=>x).length<=clues)break;
+    const v=p[i];p[i]=0;
+    if(count([...p],2)!==1)p[i]=v;
+  }
+  return{s,p}}
+
+function newGame(){
+  clearInterval(tick);
+  const g=make(+$("lvl").value);
+  sol=g.s;giv=g.p.map(x=>x>0);val=[...g.p];notes=Array.from({length:81},()=>new Set());
+  sel=-1;over=false;noteMode=false;hints=3;errs=0;secs=$("rel").checked?(+$("lvl").value>=38?900:+$("lvl").value>=31?1200:1500):0;
+  $("note").classList.remove("on");$("hc").textContent=3;$("msg").textContent="";$("msg").className="";
+  setBtn(false);
+  $("tl").textContent=$("rel").checked?"restante":"tiempo";
+  showT();
+  tick=setInterval(()=>{if($("rel").checked){secs--;if(secs<=0){showT();return finish(false,"Se acabó el tiempo.")}}else secs++;showT()},1000);
+  draw();stats();
+}
+function setBtn(d){["note","del","hint"].forEach(i=>$(i).disabled=d);document.querySelectorAll("#pad button").forEach(b=>b.disabled=d)}
+function showT(){const t=Math.max(secs,0);$("tt").textContent=Math.floor(t/60)+":"+String(t%60).padStart(2,"0");
+  $("timer").classList.toggle("low",$("rel").checked&&secs<=30)}
+function stats(){$("sw").textContent=st.w;$("sl").textContent=st.l;
+  const b=st.best[$("lvl").value];$("sb").textContent=b?Math.floor(b/60)+":"+String(b%60).padStart(2,"0"):"–"}
+
+function conflict(i){const v=val[i];if(!v)return false;const r=Math.floor(i/9),c=i%9;
+  for(let k=0;k<81;k++){if(k===i||val[k]!==v)continue;
+    const kr=Math.floor(k/9),kc=k%9;
+    if(kr===r||kc===c||(kr-kr%3===r-r%3&&kc-kc%3===c-c%3))return true}
+  return false}
+function draw(){
+  const g=$("grid");g.innerHTML="";
+  for(let i=0;i<81;i++){
+    const b=document.createElement("button");b.type="button";b.className="c";b.setAttribute("role","gridcell");
+    const r=Math.floor(i/9),c=i%9;
+    b.setAttribute("aria-label","Fila "+(r+1)+" columna "+(c+1)+(val[i]?", "+val[i]:", vacía"));
+    if(giv[i])b.classList.add("g");
+    if(sel>=0){const sr=Math.floor(sel/9),sc=sel%9;
+      if(i===sel)b.classList.add("s");
+      else if(sr===r||sc===c||(sr-sr%3===r-r%3&&sc-sc%3===c-c%3)||(val[sel]&&val[i]===val[sel]))b.classList.add("p")}
+    if(val[i]){b.textContent=val[i];if(!giv[i]&&conflict(i))b.classList.add("e")}
+    else if(notes[i].size){const n=document.createElement("div");n.className="nt";
+      for(let k=1;k<=9;k++){const x=document.createElement("i");x.textContent=notes[i].has(k)?k:"";n.appendChild(x)}b.appendChild(n)}
+    b.onclick=()=>{sel=i;draw()};
+    g.appendChild(b)}
+}
+function put(n){
+  if(over||sel<0||giv[sel])return;
+  if(noteMode&&n){if(val[sel])return;notes[sel].has(n)?notes[sel].delete(n):notes[sel].add(n)}
+  else{val[sel]=n;notes[sel].clear();
+    if(n){const r=Math.floor(sel/9),c=sel%9;
+      for(let k=0;k<81;k++){const kr=Math.floor(k/9),kc=k%9;
+        if(kr===r||kc===c||(kr-kr%3===r-r%3&&kc-kc%3===c-c%3))notes[k].delete(n)}}}
+  draw();
+  if(val.every((v,i)=>v===sol[i]))finish(true,"¡Resuelto en "+$("tt").textContent+"!");
+}
+function finish(win,t){
+  over=true;clearInterval(tick);setBtn(true);
+  if(win){st.w++;const k=$("lvl").value,used=$("rel").checked?null:secs;
+    if(used&&(!st.best[k]||used<st.best[k]))st.best[k]=used}
+  else{st.l++;val=[...sol]}
+  save();stats();draw();
+  $("msg").className=win?"win":"lose";$("msg").textContent=t}
+
+const pad=$("pad");
+for(let n=1;n<=9;n++){const b=document.createElement("button");b.textContent=n;b.onclick=()=>put(n);pad.appendChild(b)}
+$("del").onclick=()=>put(0);
+$("note").onclick=()=>{noteMode=!noteMode;$("note").classList.toggle("on",noteMode)};
+$("hint").onclick=()=>{
+  if(over||hints<=0)return;
+  if(sel<0||giv[sel]||val[sel]===sol[sel]){$("msg").textContent="Elige una casilla vacía o incorrecta.";return}
+  $("msg").textContent="";val[sel]=sol[sel];notes[sel].clear();hints--;$("hc").textContent=hints;draw();
+  if(val.every((v,i)=>v===sol[i]))finish(true,"¡Resuelto en "+$("tt").textContent+"!")};
+$("new").onclick=newGame;$("lvl").onchange=newGame;$("rel").onchange=newGame;
+document.addEventListener("keydown",e=>{
+  if(e.target.tagName==="SELECT"||e.target.tagName==="INPUT")return;
+  if(e.key>="1"&&e.key<="9")put(+e.key);
+  else if(e.key==="Backspace"||e.key==="Delete")put(0);
+  else if(e.key.startsWith("Arrow")&&sel>=0){e.preventDefault();
+    const d={ArrowLeft:-1,ArrowRight:1,ArrowUp:-9,ArrowDown:9}[e.key],r=Math.floor(sel/9),c=sel%9;
+    if((e.key==="ArrowLeft"&&c===0)||(e.key==="ArrowRight"&&c===8))return;
+    const n=sel+d;if(n>=0&&n<81){sel=n;draw();document.querySelectorAll(".c")[n].focus()}}
+});
+newGame();
+</script>
+</body>
+</html>

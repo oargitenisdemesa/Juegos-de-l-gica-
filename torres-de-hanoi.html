@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Torres de Hanói · Juego de lógica</title>
+<style>
+:root{--bg:#f3efe6;--panel:#fffdf7;--ink:#26231f;--mute:#756e62;--line:#d6cdbb;--pole:#8a7a5c;--accent:#a8431f;--bad:#c0291e;--ok:#1f7a45;--sel:#f4dcc8}
+@media (prefers-color-scheme:dark){:root{--bg:#1a1714;--panel:#252019;--ink:#efe9dc;--mute:#9a917f;--line:#3d352a;--pole:#9c8b69;--accent:#e58a5f;--bad:#ff7a6b;--ok:#6fe3a0;--sel:#4a3426}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 Georgia,serif;display:flex;justify-content:center}
+main{width:100%;max-width:460px;padding:14px 14px 40px}
+h1{font-size:1.7rem;margin:4px 0 4px}
+.sub{color:var(--mute);margin:0 0 12px;font-size:.95rem}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+select,button{font:inherit;color:var(--ink);background:var(--panel);border:1.5px solid var(--line);border-radius:8px;padding:8px 12px;cursor:pointer}
+button:disabled{opacity:.4;cursor:default}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.chk{display:flex;gap:6px;align-items:center;cursor:pointer}
+.stats{display:flex;gap:14px;background:var(--panel);border:1.5px solid var(--line);border-radius:10px;padding:8px 14px;margin-bottom:12px;font-size:.88rem;color:var(--mute)}
+.stats b{display:block;font-size:1.2rem;color:var(--ink)}
+#timer{margin-left:auto;text-align:right}#timer.low b{color:var(--bad)}
+#towers{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.t{position:relative;height:260px;background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:0;display:flex;flex-direction:column-reverse;align-items:center;padding-bottom:10px;gap:3px}
+.t.sel{background:var(--sel);border-color:var(--accent)}
+.t::before{content:"";position:absolute;bottom:10px;top:30px;left:50%;width:8px;margin-left:-4px;background:var(--pole);border-radius:4px}
+.d{position:relative;height:22px;border-radius:11px;box-shadow:inset 0 -3px 0 rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center;color:#fff;font-size:.8rem;font-weight:bold}
+.act{display:flex;gap:8px;margin-top:12px}
+.act button{flex:1}
+#msg{min-height:1.6em;text-align:center;margin-top:12px;font-weight:bold}
+#msg.win{color:var(--ok)}#msg.lose{color:var(--bad)}
+.help{color:var(--mute);font-size:.88rem;margin-top:14px}
+</style>
+</head>
+<body>
+<main>
+<p style="margin:0 0 4px"><a href="index.html" style="color:inherit">‹ Todos los juegos</a></p>
+<h1>Torres de Hanói</h1>
+<p class="sub">Lleva todos los discos a la torre de la derecha.</p>
+<div class="bar">
+  <select id="lvl" aria-label="Nivel">
+    <option value="3">Fácil · 3 discos</option>
+    <option value="5" selected>Medio · 5 discos</option>
+    <option value="7">Difícil · 7 discos</option>
+  </select>
+  <label class="chk"><input type="checkbox" id="rel"> Contrarreloj</label>
+  <button id="new">Nueva partida</button>
+</div>
+<div class="stats" aria-live="polite">
+  <div><b id="sw">0</b>ganadas</div>
+  <div><b id="sl">0</b>perdidas</div>
+  <div><b id="mv">0</b>de <span id="opt">31</span></div>
+  <div><b id="sb">–</b>récord</div>
+  <div id="timer" hidden><b id="tt">0:00</b>tiempo</div>
+</div>
+<div id="towers"></div>
+<div class="act">
+  <button id="undo">Deshacer</button>
+  <button id="reset">Reiniciar</button>
+</div>
+<p id="msg" role="status"></p>
+<p class="help">Toca una torre para coger su disco de arriba y otra torre para soltarlo. Solo se mueve un disco cada vez
+y nunca puede ir sobre uno más pequeño. El número junto a los movimientos es el mínimo posible.</p>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const COL=["#d62839","#f08a00","#c9a400","#2e9e4f","#1c7ed6","#8e44ad","#0aa5a5"];
+let n,T,sel,hist,secs,tick,over;
+let st={w:0,l:0,best:{}};
+try{const s=JSON.parse(localStorage.getItem("hanoi-lg")||"null");if(s)st=Object.assign(st,s)}catch(e){}
+const save=()=>{try{localStorage.setItem("hanoi-lg",JSON.stringify(st))}catch(e){}};
+
+function newGame(){
+  clearInterval(tick);
+  n=+$("lvl").value;
+  T=[[...Array(n).keys()].map(i=>n-i),[],[]];
+  sel=-1;hist=[];over=false;
+  $("opt").textContent=(1<<n)-1;$("msg").textContent="";$("msg").className="";
+  setBtn(false);
+  $("timer").hidden=!$("rel").checked;
+  secs=Math.round(((1<<n)-1)*2.4)+15;showT();
+  if($("rel").checked)tick=setInterval(()=>{secs--;showT();if(secs<=0)finish(false,"Se acabó el tiempo.")},1000);
+  draw();stats();
+}
+function setBtn(d){$("undo").disabled=d;$("reset").disabled=d}
+function showT(){const t=Math.max(secs,0);$("tt").textContent=Math.floor(t/60)+":"+String(t%60).padStart(2,"0");
+  $("timer").classList.toggle("low",secs<=15)}
+function stats(){$("sw").textContent=st.w;$("sl").textContent=st.l;$("mv").textContent=hist.length;
+  $("sb").textContent=st.best[$("lvl").value]||"–"}
+function draw(){
+  const w=$("towers");w.innerHTML="";
+  T.forEach((tw,i)=>{
+    const b=document.createElement("button");b.type="button";b.className="t"+(i===sel?" sel":"");
+    b.setAttribute("aria-label","Torre "+(i+1)+(tw.length?", disco superior "+tw[tw.length-1]:", vacía")+", "+tw.length+" discos");
+    tw.forEach(d=>{const e=document.createElement("div");e.className="d";
+      e.style.width=(22+d*(70/n))+"%";e.style.background=COL[(d-1)%COL.length];e.textContent=d;b.appendChild(e)});
+    b.onclick=()=>tap(i);w.appendChild(b)});
+  $("mv").textContent=hist.length;
+}
+function tap(i){
+  if(over)return;
+  if(sel<0){if(T[i].length)sel=i;draw();return}
+  if(sel===i){sel=-1;draw();return}
+  const d=T[sel][T[sel].length-1],top=T[i][T[i].length-1];
+  if(top&&top<d){$("msg").className="lose";$("msg").textContent="Un disco grande no puede ir sobre uno pequeño.";sel=-1;draw();return}
+  T[sel].pop();T[i].push(d);hist.push([sel,i]);sel=-1;$("msg").textContent="";$("msg").className="";draw();
+  if(T[2].length===n)finish(true,"¡Resuelto en "+hist.length+" movimientos"+(hist.length===(1<<n)-1?", el mínimo posible!":"!"));
+}
+function finish(win,t){
+  over=true;clearInterval(tick);setBtn(true);
+  if(win){st.w++;const k=$("lvl").value;if(!st.best[k]||hist.length<st.best[k])st.best[k]=hist.length}
+  else st.l++;
+  save();stats();draw();
+  $("msg").className=win?"win":"lose";$("msg").textContent=t}
+$("undo").onclick=()=>{if(over||!hist.length)return;const[a,b]=hist.pop();T[a].push(T[b].pop());sel=-1;draw()};
+$("reset").onclick=()=>{if(over)return;T=[[...Array(n).keys()].map(i=>n-i),[],[]];hist=[];sel=-1;draw()};
+$("new").onclick=newGame;$("lvl").onchange=newGame;$("rel").onchange=newGame;
+newGame();
+</script>
+</body>
+</html>
