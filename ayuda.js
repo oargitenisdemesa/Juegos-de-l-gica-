@@ -63,6 +63,68 @@
       ],
       ejemplo: "Si destapas 🌙 y 🍎 y no coinciden, apunta mentalmente dónde estaban: cuando salga otro 🌙 sabrás dónde está su pareja.",
       niveles: "Fácil: 12 cartas. Medio: 16 cartas. Difícil: 24 cartas. En contrarreloj, si se acaba el tiempo pierdes."
+    },
+    "deslizante": {
+      titulo: "Puzle deslizante",
+      objetivo: "Ordenar las fichas de menor a mayor, con el hueco en la esquina de abajo a la derecha.",
+      pasos: [
+        "Toca una ficha que esté en la misma fila o columna que el hueco: se desliza hacia él. Si hay varias fichas entre medias, se mueven todas a la vez.",
+        "Las fichas que no comparten fila ni columna con el hueco no se pueden mover.",
+        "Ordena primero la fila de arriba, luego la siguiente, y así hasta llegar a las últimas filas.",
+        "Debajo del título ves cuántos movimientos llevas. Ganas cuando todas las fichas están en orden."
+      ],
+      ejemplo: "Truco: no intentes colocar la última ficha de una fila directamente. Déjala una fila más abajo, cierra la fila con las demás y vuélvela a subir.",
+      niveles: "Fácil: 3×3 (2 minutos en contrarreloj). Medio: 4×4 (5 minutos). Difícil: 5×5 (10 minutos). El tablero siempre se puede resolver."
+    },
+    "buscaminas": {
+      titulo: "Buscaminas",
+      objetivo: "Destapar todas las casillas que no tienen mina.",
+      pasos: [
+        "Toca una casilla para destaparla. La primera nunca tiene mina y suele abrir una zona.",
+        "Un número indica cuántas minas hay en las 8 casillas de alrededor. Si es una casilla vacía, se abren solas las vecinas.",
+        "Para marcar una mina, pulsa «Modo bandera» y toca la casilla (con ratón, botón derecho). Vuelve a tocarla para quitar la bandera.",
+        "Si tocas un número que ya tiene a su alrededor tantas banderas como indica, se abren el resto de vecinas de golpe. Cuidado: si alguna bandera está mal, pisarás una mina.",
+        "Arriba ves cuántas minas quedan por marcar. Si destapas una mina, pierdes."
+      ],
+      ejemplo: "Si un 1 solo tiene una casilla tapada a su alrededor, esa casilla es una mina. Si ya la has marcado, el resto de vecinas de ese 1 son seguras.",
+      niveles: "Fácil: 8×8 con 8 minas (3 minutos en contrarreloj). Medio: 10×10 con 15 (7 minutos). Difícil: 12×12 con 30 (15 minutos). El reloj empieza al destapar la primera casilla."
+    },
+    "nonograma": {
+      titulo: "Nonograma",
+      objetivo: "Rellenar casillas hasta que cada fila y cada columna cumpla sus pistas y aparezca el dibujo.",
+      pasos: [
+        "Cada número de la izquierda de una fila (o encima de una columna) indica un grupo de casillas rellenas seguidas. Los grupos van en ese orden y con al menos una casilla vacía entre ellos.",
+        "Con «■ Rellenar» activado, toca una casilla para rellenarla. Con «✕ Marcar vacía» puedes señalar las que sabes que están vacías. Tocar otra vez la borra.",
+        "Arrastra el dedo para pintar varias casillas seguidas.",
+        "Cuando una fila o columna cumple su pista, los números se atenúan. Eso no garantiza que el resto esté bien, solo que esa línea cuadra.",
+        "Ganas cuando todas las filas y columnas cumplen sus pistas."
+      ],
+      ejemplo: "En una fila de 5 casillas, la pista «5» se rellena entera. Con la pista «4», las 3 casillas del centro seguro están rellenas. Con «0» toda la fila está vacía.",
+      niveles: "Fácil: 5×5 (3 minutos en contrarreloj). Medio: 8×8 (8 minutos). Difícil: 10×10 (15 minutos). El reloj empieza con tu primer toque."
+    },
+    "secuencias": {
+      titulo: "Secuencias",
+      objetivo: "Descubrir la regla de cada serie de números y escribir el que viene a continuación.",
+      pasos: [
+        "Mira los números y piensa cómo pasa de uno al siguiente: sumas, restas, multiplicaciones, cuadrados, saltos que crecen o dos series mezcladas.",
+        "Escribe el número que sustituye al «?» y pulsa «Comprobar» (o Intro).",
+        "Si aciertas, pasas a la siguiente serie. Si fallas, pierdes una vida ❤️ y se te enseña la regla para que aprendas.",
+        "Ganas si resuelves 8 series. Pierdes si te quedas sin las 3 vidas."
+      ],
+      ejemplo: "Serie 2, 4, 8, 16, ?: cada número es el doble del anterior, así que sigue el 32. Serie 1, 4, 9, 16, ?: son cuadrados (1², 2², 3², 4²), sigue el 25.",
+      niveles: "Fácil: sumas y restas, con 5 números a la vista. Medio: multiplicaciones, cuadrados, saltos crecientes y series entrelazadas. Difícil: tipo Fibonacci, cubos, triangulares y combinaciones de operaciones. En contrarreloj el tiempo es para las 8 series: 2:30, 4:00 y 6:00 minutos."
+    },
+    "inundacion": {
+      titulo: "Inundación",
+      objetivo: "Conseguir que todo el tablero sea de un solo color sin pasarte del número de movimientos.",
+      pasos: [
+        "Tu zona empieza en la esquina de arriba a la izquierda, con las casillas de su mismo color que estén pegadas.",
+        "Toca un color de la paleta de abajo: toda tu zona cambia a ese color y absorbe las vecinas que ya lo tenían.",
+        "Cada color tiene también un símbolo, para distinguirlos mejor. El color que ya tiene tu zona aparece desactivado.",
+        "Arriba ves los movimientos usados y el máximo permitido. Si llegas al máximo sin haber terminado, pierdes."
+      ],
+      ejemplo: "Una buena norma es elegir el color que absorbe más casillas de golpe. Mejor aún si te acerca a los rincones lejanos, porque son los más difíciles de alcanzar al final.",
+      niveles: "Fácil: 8×8 con 4 colores y mucho margen de movimientos (2 minutos en contrarreloj). Medio: 10×10 con 5 colores (4 minutos). Difícil: 12×12 con 6 colores y muy poco margen (7 minutos). Siempre hay al menos una forma de ganar dentro del límite."
     }
   };
 
