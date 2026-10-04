@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Buscaminas</title>
+<link rel="stylesheet" href="nuevos-juegos.css">
+<style>
+#board{display:grid;gap:3px;margin:0 auto;width:min(100%,420px);user-select:none;-webkit-user-select:none}
+.c{aspect-ratio:1;border:0;border-radius:6px;background:var(--panel);box-shadow:inset 0 0 0 1.5px var(--line);font:bold clamp(.8rem,3.6vw,1.2rem) Georgia,serif;padding:0;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.c.r{background:transparent;box-shadow:none;cursor:default}
+.c.x{background:#f3b5ae}
+.n1{color:#4a90e2}.n2{color:#43a047}.n3{color:#e53935}.n4{color:#7e57c2}
+.n5{color:#e67e22}.n6{color:#12a5b5}.n7{color:var(--ink)}.n8{color:var(--mute)}
+</style>
+</head>
+<body>
+<main>
+<div class="top"><a href="index.html">← Juegos</a><span>Ganadas: <b id="wins">0</b></span></div>
+<h1>Buscaminas</h1>
+<p class="sub">Descubre todas las casillas sin mina. Cada número indica cuántas minas hay alrededor.</p>
+<div class="ctl">
+  <div class="seg" id="lv"><button aria-pressed="true">Fácil</button><button aria-pressed="false">Medio</button><button aria-pressed="false">Difícil</button></div>
+  <label><input type="checkbox" id="ct"> Contrarreloj</label>
+  <button class="btn" id="flag" aria-pressed="false">🚩 Modo bandera</button>
+</div>
+<div class="bar"><span id="info"></span><span id="clock">0:00</span><button class="btn" id="nueva">Nueva partida</button></div>
+<div id="board"></div>
+<div id="msg" role="status"></div>
+<p class="sub" style="margin-top:14px">Tocar una casilla con número y tantas banderas como indica abre las vecinas. Con ratón, el botón derecho pone bandera.</p>
+</main>
+<script src="nuevos-juegos.js"></script>
+<script>
+const D=[[8,8,8],[10,10,15],[12,12,30]];
+let R,C,K,g,primero,perdida;
+const board=$("#board"),flag=$("#flag");
+
+const vec=i=>{
+  const r=i/C|0,c=i%C,o=[];
+  for(let y=-1;y<=1;y++)for(let x=-1;x<=1;x++){
+    if(!x&&!y)continue;
+    const rr=r+y,cc=c+x;
+    if(rr>=0&&rr<R&&cc>=0&&cc<C)o.push(rr*C+cc);
+  }
+  return o;
+};
+
+function pintar(){
+  board.style.gridTemplateColumns="repeat("+C+",1fr)";
+  board.innerHTML=g.map((c,i)=>{
+    const ver=c.r||(perdida&&c.m);
+    let t="",k="c";
+    if(c.f)t=perdida&&!c.m?"❌":"🚩";
+    else if(ver){t=c.m?"💣":(c.n||"");if(c.n&&!c.m)k+=" n"+c.n}
+    if(c.r)k+=" r";
+    if(c.x)k+=" x";
+    return '<button class="'+k+'" data-i="'+i+'">'+t+'</button>';
+  }).join("");
+  $("#info").textContent="Minas: "+(K-g.filter(c=>c.f).length);
+}
+
+function poner(ex){
+  const no=new Set([ex,...vec(ex)]);
+  let p=0;
+  while(p<K){
+    const i=rnd(0,R*C-1);
+    if(g[i].m||no.has(i))continue;
+    g[i].m=1;p++;
+  }
+  g.forEach((c,i)=>c.n=vec(i).filter(j=>g[j].m).length);
+}
+
+function revelar(i){
+  const pila=[i];
+  while(pila.length){
+    const j=pila.pop(),c=g[j];
+    if(c.r||c.f)continue;
+    c.r=1;
+    if(c.m){c.x=1;return true}
+    if(c.n===0)vec(j).forEach(k=>{if(!g[k].r&&!g[k].f)pila.push(k)});
+  }
+  return false;
+}
+
+function abrir(i){
+  if(M.fin||g[i].f)return;
+  if(primero){poner(i);primero=false;M.iniciarReloj()}
+  const c=g[i];
+  let boom=false;
+  if(c.r){
+    if(c.n&&vec(i).filter(j=>g[j].f).length===c.n)
+      vec(i).forEach(j=>{if(!g[j].r&&!g[j].f&&revelar(j))boom=true});
+  }else boom=revelar(i);
+  if(boom){perdida=true;pintar();M.perder("💥 ¡Has pisado una mina!");return}
+  if(g.filter(c=>c.r).length===R*C-K){
+    g.forEach(c=>{if(c.m)c.f=1});
+    pintar();M.ganar("¡Campo despejado!");
+  }else pintar();
+}
+
+function bandera(i){
+  if(M.fin||g[i].r)return;
+  g[i].f^=1;pintar();
+}
+
+const M=Marco({
+  key:"buscaminas-lg",
+  limites:[180,420,900],
+  nuevo(l){
+    [R,C,K]=D[l];
+    g=Array.from({length:R*C},()=>({m:0,r:0,f:0,n:0,x:0}));
+    primero=true;perdida=false;pintar();
+  },
+  alFin(ok){if(!ok){perdida=true;pintar()}}
+});
+
+board.addEventListener("click",e=>{
+  const c=e.target.closest(".c");
+  if(!c)return;
+  const i=+c.dataset.i;
+  flag.getAttribute("aria-pressed")==="true"?bandera(i):abrir(i);
+});
+board.addEventListener("contextmenu",e=>{
+  e.preventDefault();
+  const c=e.target.closest(".c");
+  if(c)bandera(+c.dataset.i);
+});
+flag.onclick=()=>flag.setAttribute("aria-pressed",flag.getAttribute("aria-pressed")!=="true");
+</script>
+</body>
+</html>

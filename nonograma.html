@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nonograma</title>
+<link rel="stylesheet" href="nuevos-juegos.css">
+<style>
+#board{display:grid;gap:2px;margin:0 auto;width:min(100%,460px);font-size:.9rem;touch-action:none;user-select:none;-webkit-user-select:none}
+.pc{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;font-size:clamp(.65rem,3vw,.9rem);line-height:1.15;padding-bottom:4px}
+.pr{display:flex;justify-content:flex-end;align-items:center;gap:.4em;padding-right:6px;font-size:clamp(.65rem,3vw,.9rem)}
+.done{opacity:.35}
+.c{aspect-ratio:1;border:0;padding:0;background:var(--panel);box-shadow:inset 0 0 0 1px var(--line);color:var(--mute);font:inherit;cursor:pointer;border-radius:3px}
+.c.f{background:var(--ink)}
+.c.m5{margin-right:4px}
+</style>
+</head>
+<body>
+<main>
+<div class="top"><a href="index.html">← Juegos</a><span>Ganadas: <b id="wins">0</b></span></div>
+<h1>Nonograma</h1>
+<p class="sub">Los números dicen cuántas casillas seguidas van rellenas en cada fila y columna. Descubre el dibujo.</p>
+<div class="ctl">
+  <div class="seg" id="lv"><button aria-pressed="true">Fácil</button><button aria-pressed="false">Medio</button><button aria-pressed="false">Difícil</button></div>
+  <label><input type="checkbox" id="ct"> Contrarreloj</label>
+</div>
+<div class="ctl">
+  <button class="btn" id="mR" aria-pressed="true">■ Rellenar</button>
+  <button class="btn" id="mM" aria-pressed="false">✕ Marcar vacía</button>
+</div>
+<div class="bar"><span id="info">Arrastra para pintar varias</span><span id="clock">0:00</span><button class="btn" id="nueva">Nueva partida</button></div>
+<div id="board"></div>
+<div id="msg" role="status"></div>
+</main>
+<script src="nuevos-juegos.js"></script>
+<script>
+const S=[5,8,10];
+let n,sol,cur,pf,pc,modo=1,val=0,arrastre=false,celdas=[],clF=[],clC=[];
+const board=$("#board");
+
+const pistas=l=>{
+  const o=[];let k=0;
+  l.forEach(v=>{if(v)k++;else if(k){o.push(k);k=0}});
+  if(k)o.push(k);
+  return o.length?o:[0];
+};
+const igual=(x,y)=>x.length===y.length&&x.every((v,i)=>v===y[i]);
+const fila=(m,r)=>Array.from({length:n},(_,c)=>m[r*n+c]===1?1:0);
+const col=(m,c)=>Array.from({length:n},(_,r)=>m[r*n+c]===1?1:0);
+
+function nuevoTablero(){
+  sol=Array.from({length:n*n},()=>Math.random()<.58?1:0);
+  cur=Array(n*n).fill(0);
+  pf=Array.from({length:n},(_,r)=>pistas(fila(sol,r)));
+  pc=Array.from({length:n},(_,c)=>pistas(col(sol,c)));
+  const k=Math.max(...pf.map(p=>p.length));
+  let h='<div></div>';
+  pc.forEach(p=>h+='<div class="pc">'+p.map(x=>"<span>"+x+"</span>").join("")+"</div>");
+  for(let r=0;r<n;r++){
+    h+='<div class="pr">'+pf[r].map(x=>"<span>"+x+"</span>").join("")+"</div>";
+    for(let c=0;c<n;c++)h+='<button class="c" data-i="'+(r*n+c)+'" aria-label="Fila '+(r+1)+', columna '+(c+1)+'"></button>';
+  }
+  board.style.gridTemplateColumns=(k*1.3+.6)+"em repeat("+n+",1fr)";
+  board.innerHTML=h;
+  celdas=[...board.querySelectorAll(".c")];
+  clF=[...board.querySelectorAll(".pr")];
+  clC=[...board.querySelectorAll(".pc")];
+}
+
+function pintarCelda(i){
+  const e=celdas[i];
+  e.className="c"+(cur[i]===1?" f":"");
+  e.textContent=cur[i]===2?"✕":"";
+}
+
+function comprobar(){
+  let todo=true;
+  for(let r=0;r<n;r++){
+    const ok=igual(pistas(fila(cur,r)),pf[r]);
+    clF[r].classList.toggle("done",ok);if(!ok)todo=false;
+  }
+  for(let c=0;c<n;c++){
+    const ok=igual(pistas(col(cur,c)),pc[c]);
+    clC[c].classList.toggle("done",ok);if(!ok)todo=false;
+  }
+  if(todo)M.ganar("¡Nonograma resuelto!");
+}
+
+const M=Marco({
+  key:"nonograma-lg",
+  limites:[180,480,900],
+  nuevo(l){n=S[l];nuevoTablero()}
+});
+
+function aplicar(i){
+  if(cur[i]===val)return;
+  cur[i]=val;pintarCelda(i);
+}
+board.addEventListener("pointerdown",e=>{
+  const c=e.target.closest(".c");
+  if(!c||M.fin)return;
+  e.preventDefault();
+  M.iniciarReloj();
+  const t=e.button===2?2:modo,i=+c.dataset.i;
+  val=cur[i]===t?0:t;
+  arrastre=true;aplicar(i);
+});
+board.addEventListener("pointermove",e=>{
+  if(!arrastre||M.fin)return;
+  const el=document.elementFromPoint(e.clientX,e.clientY),c=el&&el.closest&&el.closest(".c");
+  if(c&&board.contains(c))aplicar(+c.dataset.i);
+});
+addEventListener("pointerup",()=>{if(arrastre){arrastre=false;if(!M.fin)comprobar()}});
+addEventListener("pointercancel",()=>{arrastre=false});
+board.addEventListener("contextmenu",e=>e.preventDefault());
+
+const mR=$("#mR"),mM=$("#mM");
+mR.onclick=()=>{modo=1;mR.setAttribute("aria-pressed",true);mM.setAttribute("aria-pressed",false)};
+mM.onclick=()=>{modo=2;mM.setAttribute("aria-pressed",true);mR.setAttribute("aria-pressed",false)};
+</script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inundación</title>
+<link rel="stylesheet" href="nuevos-juegos.css">
+<style>
+#board{display:grid;gap:2px;margin:0 auto 14px;width:min(100%,420px);aspect-ratio:1}
+.k{display:flex;align-items:center;justify-content:center;border-radius:4px;color:rgba(0,0,0,.4);font-size:clamp(.5rem,2.6vw,.9rem);transition:background .15s}
+#pal{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+#pal button{width:52px;height:52px;border-radius:12px;border:2px solid var(--line);color:rgba(0,0,0,.45);font-size:1.2rem;cursor:pointer;padding:0}
+#pal button:disabled{opacity:.3;cursor:default}
+@media (prefers-reduced-motion:reduce){.k{transition:none}}
+</style>
+</head>
+<body>
+<main>
+<div class="top"><a href="index.html">← Juegos</a><span>Ganadas: <b id="wins">0</b></span></div>
+<h1>Inundación</h1>
+<p class="sub">Empieza en la esquina de arriba a la izquierda. Cambia su color para absorber vecinas hasta que todo el tablero sea de un solo color.</p>
+<div class="ctl">
+  <div class="seg" id="lv"><button aria-pressed="true">Fácil</button><button aria-pressed="false">Medio</button><button aria-pressed="false">Difícil</button></div>
+  <label><input type="checkbox" id="ct"> Contrarreloj</label>
+</div>
+<div class="bar"><span id="info"></span><span id="clock">0:00</span><button class="btn" id="nueva">Nueva partida</button></div>
+<div id="board"></div>
+<div id="pal"></div>
+<div id="msg" role="status"></div>
+</main>
+<script src="nuevos-juegos.js"></script>
+<script>
+const D=[[8,4,6],[10,5,3],[12,6,1]];
+const COL=["#e4572e","#f3a712","#29a39a","#3d7dca","#8e5bd1","#e0457b"];
+const SIM=["●","▲","■","◆","★","✚"];
+let n,K,g,mov,max;
+const board=$("#board"),pal=$("#pal");
+
+function region(h){
+  const v=new Uint8Array(n*n),pila=[0],o=[],c=h[0];
+  v[0]=1;
+  while(pila.length){
+    const i=pila.pop();o.push(i);
+    const r=i/n|0,x=i%n;
+    [r>0?i-n:-1,r<n-1?i+n:-1,x>0?i-1:-1,x<n-1?i+1:-1].forEach(j=>{
+      if(j>=0&&!v[j]&&h[j]===c){v[j]=1;pila.push(j)}
+    });
+  }
+  return o;
+}
+function aplicar(h,c){
+  if(h[0]===c)return;
+  region(h).forEach(i=>h[i]=c);
+}
+const uno=h=>h.every(v=>v===h[0]);
+
+function voraz(g0){
+  const h=g0.slice();let m=0;
+  while(!uno(h)){
+    let mejor=-1,bs=-1;
+    for(let c=0;c<K;c++){
+      if(c===h[0])continue;
+      const t=h.slice();aplicar(t,c);
+      const s=region(t).length;
+      if(s>bs){bs=s;mejor=c}
+    }
+    aplicar(h,mejor);m++;
+  }
+  return m;
+}
+
+function pintar(m=M){
+  board.style.gridTemplateColumns="repeat("+n+",1fr)";
+  board.innerHTML=g.map(c=>'<div class="k" style="background:'+COL[c]+'">'+SIM[c]+"</div>").join("");
+  [...pal.children].forEach((b,c)=>b.disabled=m.fin||c===g[0]);
+  $("#info").textContent="Movimientos: "+mov+" / "+max;
+}
+
+function montarPaleta(){
+  pal.innerHTML="";
+  for(let c=0;c<K;c++){
+    const b=document.createElement("button");
+    b.style.background=COL[c];b.textContent=SIM[c];b.setAttribute("aria-label","Color "+(c+1));
+    b.onclick=()=>jugar(c);
+    pal.appendChild(b);
+  }
+}
+
+const M=Marco({
+  key:"inundacion-lg",
+  limites:[120,240,420],
+  nuevo(l,m){
+    let holgura;
+    [n,K,holgura]=D[l];
+    do{g=Array.from({length:n*n},()=>rnd(0,K-1))}while(uno(g));
+    max=voraz(g)+holgura;mov=0;
+    montarPaleta();pintar(m);
+  },
+  alFin(){pintar()}
+});
+
+function jugar(c){
+  if(M.fin||c===g[0])return;
+  M.iniciarReloj();
+  aplicar(g,c);mov++;
+  pintar();
+  if(uno(g))M.ganar("¡Tablero inundado en "+mov+" movimientos!");
+  else if(mov>=max)M.perder("Te quedaste sin movimientos. Prueba otra vez.");
+}
+</script>
+</body>
+</html>

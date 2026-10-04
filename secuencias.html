@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Secuencias</title>
+<link rel="stylesheet" href="nuevos-juegos.css">
+<style>
+.q{background:var(--panel);border:1.5px solid var(--line);border-radius:14px;padding:18px 14px;text-align:center}
+.seq{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:6px 0 16px}
+.n{min-width:46px;padding:8px 10px;border-radius:10px;border:1.5px solid var(--line);font:bold 1.2rem Georgia,serif;font-variant-numeric:tabular-nums}
+.n.i{border-style:dashed;border-color:var(--accent)}
+.fila{display:flex;gap:10px;justify-content:center}
+input[type=text]{width:120px;font:bold 1.3rem Georgia,serif;text-align:center;padding:8px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
+.vidas{letter-spacing:.15em}
+#fb{min-height:1.5em;text-align:center;margin-top:12px;color:var(--mute)}
+</style>
+</head>
+<body>
+<main>
+<div class="top"><a href="index.html">← Juegos</a><span>Ganadas: <b id="wins">0</b></span></div>
+<h1>Secuencias</h1>
+<p class="sub">Descubre la regla y escribe el número que sigue. Acierta 8 secuencias antes de perder las 3 vidas.</p>
+<div class="ctl">
+  <div class="seg" id="lv"><button aria-pressed="true">Fácil</button><button aria-pressed="false">Medio</button><button aria-pressed="false">Difícil</button></div>
+  <label><input type="checkbox" id="ct"> Contrarreloj</label>
+</div>
+<div class="bar"><span id="info"></span><span id="clock">0:00</span><button class="btn" id="nueva">Nueva partida</button></div>
+<div class="q">
+  <div class="seq" id="seq"></div>
+  <div class="fila">
+    <input type="text" id="resp" inputmode="numeric" autocomplete="off" aria-label="Número que sigue">
+    <button class="btn" id="ok">Comprobar</button>
+  </div>
+</div>
+<div id="fb" role="status"></div>
+<div id="msg" role="status"></div>
+</main>
+<script src="nuevos-juegos.js"></script>
+<script>
+const TOTAL=8;
+let idx,vidas,preg;
+const seq=$("#seq"),resp=$("#resp"),fb=$("#fb");
+
+const G={
+  arit:n=>{const a=rnd(1,30),d=rnd(2,9);return[Array.from({length:n},(_,i)=>a+i*d),"se suma "+d+" cada vez"]},
+  desc:n=>{const a=rnd(40,90),d=rnd(2,8);return[Array.from({length:n},(_,i)=>a-i*d),"se resta "+d+" cada vez"]},
+  alt:n=>{const p=rnd(1,5),q=rnd(6,10);let x=rnd(1,15);return[Array.from({length:n},(_,i)=>{if(i)x+=i%2?p:q;return x}),"se suma "+p+" y "+q+" alternando"]},
+  geo:n=>{const a=rnd(1,4),r=rnd(2,3);return[Array.from({length:n},(_,i)=>a*r**i),"se multiplica por "+r]},
+  cuad:n=>{const k=rnd(1,6);return[Array.from({length:n},(_,i)=>(i+k)**2),"son cuadrados: "+k+"², "+(k+1)+"², "+(k+2)+"²…"]},
+  dif:n=>{let x=rnd(1,10),d=rnd(1,3);const e=rnd(1,2),d0=d;return[Array.from({length:n},(_,i)=>{if(i){x+=d;d+=e}return x}),"se suma "+d0+" y el salto crece "+e+" cada vez"]},
+  inter:n=>{const a=rnd(1,10),b=rnd(20,40),p=rnd(2,5),q=rnd(2,6);return[Array.from({length:n},(_,i)=>i%2?b+(i>>1)*q:a+(i>>1)*p),"dos series entrelazadas: +"+p+" en las posiciones impares y +"+q+" en las pares"]},
+  fib:n=>{const o=[rnd(1,5),rnd(1,5)];while(o.length<n)o.push(o[o.length-1]+o[o.length-2]);return[o,"cada número es la suma de los dos anteriores"]},
+  cubos:n=>{const k=rnd(0,2);return[Array.from({length:n},(_,i)=>(i+1+k)**3),"son cubos: "+(1+k)+"³, "+(2+k)+"³, "+(3+k)+"³…"]},
+  dobla:n=>{const c=[-1,1,2,3][rnd(0,3)];let x=rnd(3,6);return[Array.from({length:n},(_,i)=>{if(i)x=2*x+c;return x}),"se multiplica por 2 "+(c<0?"y se resta "+(-c):"y se suma "+c)]},
+  tri:n=>{const k=rnd(0,3);return[Array.from({length:n},(_,i)=>{const m=i+1+k;return m*(m+1)/2}),"son números triangulares (1, 3, 6, 10, 15…)"]},
+  mulsum:n=>{const a=rnd(2,4),b=rnd(1,4);let x=rnd(1,4);return[Array.from({length:n},(_,i)=>{if(i)x=i%2?x*a:x+b;return x}),"se alterna: ×"+a+" y +"+b]}
+};
+const POOL=[[G.arit,G.desc,G.alt],[G.geo,G.cuad,G.dif,G.inter],[G.fib,G.cubos,G.dobla,G.tri,G.mulsum]];
+
+function siguiente(l){
+  const f=POOL[l][rnd(0,POOL[l].length-1)];
+  const [s,regla]=f(l===0?6:7);
+  preg={resp:s[s.length-1],regla};
+  seq.innerHTML=s.slice(0,-1).map(v=>'<span class="n">'+v+"</span>").join("")+'<span class="n i">?</span>';
+  resp.value="";resp.focus();
+  info();
+}
+function info(){
+  $("#info").innerHTML='Secuencia '+Math.min(idx+1,TOTAL)+' de '+TOTAL+' · <span class="vidas" aria-label="'+vidas+' vidas">'+"❤️".repeat(vidas)+"🖤".repeat(3-vidas)+"</span>";
+}
+
+const M=Marco({
+  key:"secuencias-lg",
+  limites:[150,240,360],
+  nuevo(l,m){idx=0;vidas=3;fb.textContent="";m.iniciarReloj();siguiente(l)}
+});
+
+function comprobar(){
+  if(M.fin)return;
+  const t=resp.value.trim();
+  if(t==="")return;
+  if(Number(t)===preg.resp){
+    idx++;fb.textContent="✔ Correcto: "+preg.regla+".";
+    if(idx>=TOTAL){info();M.ganar("¡Has resuelto las "+TOTAL+" secuencias!");return}
+  }else{
+    vidas--;fb.textContent="✘ Era "+preg.resp+": "+preg.regla+".";
+    if(vidas<=0){info();M.perder("Te quedaste sin vidas.");return}
+  }
+  siguiente(M.nivel);
+}
+$("#ok").onclick=comprobar;
+resp.addEventListener("keydown",e=>{if(e.key==="Enter")comprobar()});
+</script>
+</body>
+</html>

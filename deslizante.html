@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Puzle deslizante</title>
+<link rel="stylesheet" href="nuevos-juegos.css">
+<style>
+#board{display:grid;gap:5px;margin:0 auto;width:min(100%,420px);aspect-ratio:1}
+.t{border:0;border-radius:10px;background:var(--panel);box-shadow:inset 0 0 0 1.5px var(--line);color:var(--ink);font:bold clamp(1.1rem,6vw,1.9rem) Georgia,serif;cursor:pointer;padding:0}
+.t:hover{box-shadow:inset 0 0 0 2px var(--accent)}
+.t.v{visibility:hidden}
+</style>
+</head>
+<body>
+<main>
+<div class="top"><a href="index.html">← Juegos</a><span>Ganadas: <b id="wins">0</b></span></div>
+<h1>Puzle deslizante</h1>
+<p class="sub">Ordena las fichas de menor a mayor. Toca una ficha para deslizarla hacia el hueco.</p>
+<div class="ctl">
+  <div class="seg" id="lv"><button aria-pressed="true">Fácil</button><button aria-pressed="false">Medio</button><button aria-pressed="false">Difícil</button></div>
+  <label><input type="checkbox" id="ct"> Contrarreloj</label>
+</div>
+<div class="bar"><span id="info"></span><span id="clock">0:00</span><button class="btn" id="nueva">Nueva partida</button></div>
+<div id="board"></div>
+<div id="msg" role="status"></div>
+</main>
+<script src="nuevos-juegos.js"></script>
+<script>
+const N=[3,4,5];
+let n,a,b,mov;
+const board=$("#board");
+
+const resuelto=()=>a.every((v,i)=>v===(i<n*n-1?i+1:0));
+
+function pintar(){
+  board.style.gridTemplateColumns="repeat("+n+",1fr)";
+  board.innerHTML=a.map((v,i)=>'<button class="t'+(v?"":" v")+'" data-i="'+i+'"'+(v?"":' tabindex="-1" aria-hidden="true"')+'>'+(v||"")+'</button>').join("");
+  $("#info").textContent=mov+" movimientos";
+}
+
+function mezclar(){
+  do{
+    a=Array.from({length:n*n},(_,i)=>i+1);a[n*n-1]=0;b=n*n-1;
+    let prev=-1;
+    for(let k=0;k<n*n*30;k++){
+      const r=b/n|0,c=b%n,v=[];
+      if(r>0)v.push(b-n);
+      if(r<n-1)v.push(b+n);
+      if(c>0)v.push(b-1);
+      if(c<n-1)v.push(b+1);
+      const o=v.filter(x=>x!==prev),nb=o[rnd(0,o.length-1)];
+      a[b]=a[nb];a[nb]=0;prev=b;b=nb;
+    }
+  }while(resuelto());
+}
+
+function mover(i){
+  const r=i/n|0,c=i%n,br=b/n|0,bc=b%n;
+  if(i===b)return;
+  if(r===br){
+    const d=c<bc?1:-1;
+    for(let x=bc;x!==c;x-=d)a[br*n+x]=a[br*n+x-d];
+  }else if(c===bc){
+    const d=r<br?1:-1;
+    for(let y=br;y!==r;y-=d)a[y*n+bc]=a[(y-d)*n+bc];
+  }else return;
+  a[i]=0;b=i;mov++;
+  pintar();
+}
+
+const M=Marco({
+  key:"deslizante-lg",
+  limites:[120,300,600],
+  nuevo(l){n=N[l];mov=0;mezclar();pintar()}
+});
+
+board.onclick=e=>{
+  const t=e.target.closest(".t");
+  if(!t||M.fin)return;
+  M.iniciarReloj();
+  mover(+t.dataset.i);
+  if(resuelto())M.ganar("¡Puzle resuelto en "+mov+" movimientos!");
+};
+</script>
+</body>
+</html>
