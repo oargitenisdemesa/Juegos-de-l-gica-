@@ -4,7 +4,33 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Buscaminas</title>
-<link rel="stylesheet" href="nuevos-juegos.css">
+<style>
+:root{--bg:#f4f1ea;--panel:#fffdf8;--ink:#22201c;--mute:#756f64;--line:#d9d2c3;--accent:#22201c;--ok:#2e7d4f;--ko:#b3392f}
+@media (prefers-color-scheme:dark){:root{--bg:#151412;--panel:#201e1b;--ink:#efebe2;--mute:#9a9486;--line:#38342d;--accent:#efebe2;--ok:#6fcf97;--ko:#ff8a80}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 Georgia,serif;display:flex;justify-content:center;-webkit-tap-highlight-color:transparent}
+main{width:100%;max-width:560px;padding:16px 16px 48px}
+.top{display:flex;justify-content:space-between;align-items:center;color:var(--mute);font-size:.95rem}
+.top a{color:inherit}
+.top b{color:var(--ink)}
+h1{font-size:1.7rem;margin:10px 0 2px;letter-spacing:-.01em}
+.sub{color:var(--mute);margin:0 0 14px;font-size:.95rem}
+.ctl{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin-bottom:12px}
+.seg{display:flex;border:1.5px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{border:0;background:var(--panel);color:var(--ink);font:inherit;padding:8px 14px;cursor:pointer;min-height:40px}
+.seg button[aria-pressed=true]{background:var(--accent);color:var(--bg)}
+label{display:flex;gap:6px;align-items:center;cursor:pointer}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;color:var(--mute)}
+#clock{font-variant-numeric:tabular-nums;color:var(--ink);font-weight:bold}
+.btn{border:1.5px solid var(--line);background:var(--panel);color:var(--ink);font:inherit;border-radius:10px;padding:8px 14px;cursor:pointer;min-height:40px}
+.btn:hover{border-color:var(--accent)}
+.btn[aria-pressed=true]{background:var(--accent);color:var(--bg)}
+.btn:disabled{opacity:.45;cursor:default}
+#msg{min-height:1.6em;margin-top:14px;font-weight:bold;text-align:center}
+#msg.ok{color:var(--ok)}
+#msg.ko{color:var(--ko)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+</style>
 <style>
 #board{display:grid;gap:3px;margin:0 auto;width:min(100%,420px);user-select:none;-webkit-user-select:none}
 .c{aspect-ratio:1;border:0;border-radius:6px;background:var(--panel);box-shadow:inset 0 0 0 1.5px var(--line);font:bold clamp(.8rem,3.6vw,1.2rem) Georgia,serif;padding:0;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center}
@@ -29,7 +55,53 @@
 <div id="msg" role="status"></div>
 <p class="sub" style="margin-top:14px">Tocar una casilla con número y tantas banderas como indica abre las vecinas. Con ratón, el botón derecho pone bandera.</p>
 </main>
-<script src="nuevos-juegos.js"></script>
+<script>
+const $=s=>document.querySelector(s);
+const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const fmt=s=>Math.floor(s/60)+":"+String(s%60).padStart(2,"0");
+/* Marco común: niveles, contrarreloj, reloj y contador de partidas ganadas.
+   cfg = { key, limites:[seg fácil, medio, difícil], nuevo(nivel, marco), alFin(ganado) } */
+function Marco(cfg){
+  const M={nivel:0,fin:false,t0:0,tick:0,limite:0};
+  const clock=$("#clock"),msg=$("#msg"),ct=$("#ct"),botones=[...document.querySelectorAll("#lv button")];
+  const leer=()=>{try{return JSON.parse(localStorage.getItem(cfg.key)||"null")||{w:0}}catch(e){return{w:0}}};
+  const verGanadas=()=>{$("#wins").textContent=leer().w||0};
+  M.seg=()=>M.t0?Math.floor((Date.now()-M.t0)/1000):0;
+  M.dibujar=()=>{
+    const e=M.seg();
+    if(ct.checked){
+      const r=Math.max(M.limite-e,0);
+      clock.textContent="⏱ "+fmt(r);
+      if(r===0&&M.t0&&!M.fin)M.perder("⏰ Se acabó el tiempo.");
+    }else clock.textContent=fmt(e);
+  };
+  M.iniciarReloj=()=>{if(M.t0||M.fin)return;M.t0=Date.now();M.tick=setInterval(M.dibujar,250)};
+  const cerrar=(ok,txt)=>{
+    M.fin=true;clearInterval(M.tick);M.dibujar();
+    msg.className=ok?"ok":"ko";msg.textContent=txt;
+    if(cfg.alFin)cfg.alFin(ok);
+  };
+  M.ganar=t=>{
+    if(M.fin)return;
+    const s=leer();s.w=(s.w||0)+1;
+    try{localStorage.setItem(cfg.key,JSON.stringify(s))}catch(e){}
+    verGanadas();cerrar(true,"🎉 "+t);
+  };
+  M.perder=t=>{if(!M.fin)cerrar(false,t)};
+  M.nueva=()=>{
+    clearInterval(M.tick);M.t0=0;M.fin=false;M.limite=cfg.limites[M.nivel];
+    msg.textContent="";msg.className="";M.dibujar();
+    cfg.nuevo(M.nivel,M);
+  };
+  botones.forEach((b,i)=>b.onclick=()=>{
+    M.nivel=i;botones.forEach((x,j)=>x.setAttribute("aria-pressed",i===j));M.nueva();
+  });
+  ct.onchange=M.nueva;
+  $("#nueva").onclick=M.nueva;
+  verGanadas();M.nueva();
+  return M;
+}
+</script>
 <script>
 const D=[[8,8,8],[10,10,15],[12,12,30]];
 let R,C,K,g,primero,perdida;
