@@ -125,6 +125,35 @@
       ],
       ejemplo: "Una buena norma es elegir el color que absorbe más casillas de golpe. Mejor aún si te acerca a los rincones lejanos, porque son los más difíciles de alcanzar al final.",
       niveles: "Fácil: 8×8 con 4 colores y mucho margen de movimientos (2 minutos en contrarreloj). Medio: 10×10 con 5 colores (4 minutos). Difícil: 12×12 con 6 colores y muy poco margen (7 minutos). Siempre hay al menos una forma de ganar dentro del límite."
+    },
+    "cadena-de-palabras": {
+      titulo: "Cadena de palabras",
+      objetivo: "Escribir una cadena de palabras en la que cada una empieza por la última letra de la anterior, con reglas que se van sumando, antes de que se acabe el tiempo.",
+      pasos: [
+        "Arriba ves la letra del día. La primera palabra tiene que empezar por ella.",
+        "Escribe tu palabra y pulsa «OK» (o Intro). Si cumple las reglas, pasa al siguiente eslabón de la cadena. Si no, te dice qué falla y puedes probar otra.",
+        "Cada palabra empieza por la última letra de la anterior. Si acaba en K, W, X, Y, Z, Ñ, Q o J, la siguiente empieza por la letra anterior que sí se pueda encadenar.",
+        "Las reglas se acumulan. Desde el eslabón 3 la palabra debe <b>contener la letra A</b>. Desde el 4 debe tener <b>al menos 7 letras</b>. En los niveles medio y difícil, el eslabón 5 (y el 7 en difícil) tiene que ser un <b>sustantivo abstracto</b>, como libertad o esperanza.",
+        "Las palabras que no están en el diccionario básico del juego se comprueban en el Wiktionary en español. Si no hay conexión, se aceptan cuando parecen españolas. Puedes escribir con o sin tildes.",
+        "«Pista» te enseña las dos primeras letras de una palabra válida y resta 3 puntos.",
+        "Ganas si completas toda la cadena. Si se acaba el tiempo, pierdes. Cada palabra da un punto por letra, 2 más si está en el diccionario básico y 5 más si tiene 10 letras o más. Al terminar, cada segundo que sobre suma un punto."
+      ],
+      ejemplo: "Letra del día C, nivel fácil: <b>casa</b> (acaba en A) → <b>amor</b> (empieza por A, acaba en R) → <b>rana</b> (empieza por R y contiene A) → <b>aventura</b> (empieza por A y tiene 8 letras).",
+      niveles: "Fácil: 4 eslabones y 120 segundos. Medio: 5 eslabones y 90 segundos. Difícil: 7 eslabones y 90 segundos, con palabras cada vez más largas. El reto del día es siempre de nivel medio, y tu racha sube un día cada vez que lo completas sin ningún error."
+    },
+    "dilema-del-orden": {
+      titulo: "Dilema del orden",
+      objetivo: "Ordenar 6 elementos descubriendo la regla secreta que los ordena.",
+      pasos: [
+        "Arrastra cada elemento por el agarrador ⋮⋮ (o usa las flechas ▲ y ▼) hasta ponerlos en el orden que crees correcto.",
+        "Pulsa «Comprobar». Te dice cuántos elementos están en su sitio y, respecto al intento anterior, si estás <b>más cerca</b> o <b>más lejos</b>. El termómetro va de frío a caliente.",
+        "Nadie te dice la regla: puede ser el orden alfabético, el tamaño, la fecha, el orden lógico de un proceso... Tienes que deducirla probando. No hay penalización por intentos, pero el reloj corre.",
+        "Con el <b>criterio cambiante</b> (niveles medio y difícil), cuando aciertas 3 elementos la regla cambia en silencio. Si de pronto tus aciertos se hunden, piensa que la regla puede haber cambiado y vuelve a ordenar.",
+        "En el modo <b>Orden inverso</b> el orden correcto ya está casi hecho, pero un elemento está fuera de su sitio a propósito. Encuentra cuál es y colócalo donde toca.",
+        "Ganas cuando los 6 elementos están en su sitio. Al terminar (o si te rindes) se muestran la regla y el orden final."
+      ],
+      ejemplo: "Con Perro, Saturno, Cebolla, Marte, Gato y Júpiter, una regla posible es «animales, luego planetas, luego verduras, y alfabético dentro de cada grupo»: Gato, Perro, Júpiter, Marte, Saturno, Cebolla. Otra sería el orden alfabético simple. El marcador te dirá cuál se acerca más.",
+      niveles: "Fácil: la regla no cambia. Medio: la regla cambia cuando aciertas 3. Difícil: igual que medio, pero sin «más cerca / más lejos» ni termómetro, solo el número de aciertos. Con contrarreloj tienes 4 minutos (fácil), 3 (medio) o 2 (difícil), y si se acaban pierdes. El reto del día es siempre de nivel medio y sin límite de tiempo."
     }
   };
 

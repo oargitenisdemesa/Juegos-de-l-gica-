@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cadena de palabras</title>
+<style>
+:root{--bg:#f4f1ea;--panel:#fffdf8;--ink:#22201c;--mute:#756f64;--line:#d9d2c3;--accent:#22201c;--good:#2f7d4f;--bad:#b3392f;--gold:#d99a1c}
+@media (prefers-color-scheme:dark){:root{--bg:#151412;--panel:#201e1b;--ink:#efebe2;--mute:#9a9486;--line:#38342d;--accent:#efebe2;--good:#6fcf97;--bad:#ff8a80;--gold:#e8b44a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 Georgia,serif;display:flex;justify-content:center}
+main{width:100%;max-width:560px;padding:22px max(16px,env(safe-area-inset-right,0px)) 48px max(16px,env(safe-area-inset-left,0px))}
+a.back{color:var(--mute);font-size:.9rem;text-decoration:none}
+a.back:hover{color:var(--ink);text-decoration:underline}
+h1{font-size:2rem;margin:6px 0 4px;letter-spacing:-.01em}
+.sub{color:var(--mute);margin:0 0 14px}
+.stats{display:flex;gap:16px;flex-wrap:wrap;color:var(--mute);font-size:.9rem;margin:0 0 16px}
+.stats b{color:var(--ink);font-variant-numeric:tabular-nums}
+.panel{background:var(--panel);border:1.5px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+.panel[hidden]{display:none}
+h2{font-size:.8rem;margin:16px 0 6px;color:var(--mute);text-transform:uppercase;letter-spacing:.08em;font-weight:normal}
+.seed{display:flex;gap:16px;align-items:center}
+.seedletter{flex:none;width:76px;height:76px;border-radius:50%;background:var(--accent);color:var(--panel);display:flex;align-items:center;justify-content:center;font-size:2.8rem;line-height:1}
+.mute{color:var(--mute)}
+.small{font-size:.88rem}
+p{margin:0}
+button{font:inherit;cursor:pointer;border-radius:10px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);padding:10px 14px;min-height:44px}
+button:hover:not(:disabled){border-color:var(--accent)}
+button.primary{background:var(--accent);color:var(--panel);border-color:var(--accent)}
+button:disabled{opacity:.5;cursor:default}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.seg{display:flex;border:1.5px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{flex:1;border:0;border-radius:0;min-height:42px}
+.seg button+button{border-left:1.5px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--panel)}
+.rules{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:.92rem}
+.rules li{display:flex;gap:10px}
+.rules i{font-style:normal;color:var(--mute);flex:none;width:1.4em;text-align:right}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.row>button{flex:1 1 140px}
+.hud{display:flex;align-items:center;gap:12px}
+.time{font-size:1.7rem;font-variant-numeric:tabular-nums;min-width:2.6ch}
+.time.low{color:var(--bad)}
+.bar{flex:1;height:8px;border-radius:99px;background:var(--line);overflow:hidden}
+.bar>div{height:100%;background:var(--accent);transform-origin:left;transition:transform .25s linear}
+.bar.low>div{background:var(--bad)}
+.pts{color:var(--mute);font-size:.9rem;font-variant-numeric:tabular-nums;white-space:nowrap}
+.chain{list-style:none;margin:16px 0 0;padding:0}
+.link{position:relative;display:grid;grid-template-columns:38px minmax(0,1fr);gap:12px;padding-bottom:12px}
+.link:last-child{padding-bottom:0}
+.link::before{content:"";position:absolute;left:18px;top:38px;bottom:-2px;width:2px;background:var(--line)}
+.link:last-child::before{display:none}
+.link.done::before{background:var(--gold)}
+.node{width:38px;height:38px;border-radius:50%;border:2px solid var(--line);background:var(--panel);color:var(--mute);display:flex;align-items:center;justify-content:center;font-size:1.05rem;z-index:1}
+.link.done .node{background:var(--gold);border-color:var(--gold);color:#1d1600}
+.link.active .node{border-color:var(--accent);color:var(--ink)}
+.body{min-width:0;padding-top:3px}
+.word{font-size:1.3rem;overflow-wrap:anywhere}
+.word b{color:var(--gold)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:.78rem;padding:2px 8px;border-radius:99px;border:1px solid var(--line);color:var(--mute)}
+.link.active .chip{border-color:var(--accent);color:var(--ink)}
+.link.locked .body{opacity:.55}
+form{display:flex;gap:8px;margin-top:14px}
+input[type=text]{flex:1;min-width:0;font:inherit;font-size:1.1rem;padding:10px 12px;border-radius:10px;border:1.5px solid var(--accent);background:var(--bg);color:var(--ink);min-height:46px}
+.msg{min-height:1.4em;font-size:.9rem;margin-top:6px}
+.msg.err{color:var(--bad)} .msg.ok{color:var(--good)}
+.shake{animation:sh .3s}
+@keyframes sh{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.big{font-size:3rem;line-height:1;letter-spacing:-.02em;margin:10px 0 6px}
+.badge{display:inline-block;padding:3px 12px;border-radius:99px;font-size:.85rem;background:var(--good);color:var(--bg)}
+.badge.no{background:var(--line);color:var(--ink)}
+table{width:100%;border-collapse:collapse;font-size:.95rem;margin-top:10px}
+td{padding:6px 0;border-bottom:1px solid var(--line)}
+td:last-child{text-align:right;font-variant-numeric:tabular-nums}
+textarea{width:100%;font:inherit;font-size:.85rem;border-radius:10px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);padding:10px;resize:none;margin-top:12px}
+@media (prefers-reduced-motion:reduce){.shake{animation:none}.bar>div{transition:none}}
+</style>
+</head>
+<body>
+<main>
+<a class="back" href="index.html">← Todos los juegos</a>
+<h1>Cadena de palabras</h1>
+<p class="sub">Cada palabra empieza por la última letra de la anterior, y las reglas se van sumando.</p>
+<p class="stats"><span>Ganadas: <b id="stW">0</b></span><span>Racha: <b id="stS">0</b></span><span>Récord: <b id="stB">0</b> pts</span></p>
+
+<section id="start" class="panel">
+  <div class="seed">
+    <div class="seedletter" id="seedLetter" aria-hidden="true">M</div>
+    <div>
+      <p class="mute small" id="seedLabel">Letra del día</p>
+      <p>Encadena palabras antes de que se acabe el tiempo.</p>
+    </div>
+  </div>
+  <h2>Nivel</h2>
+  <div class="seg" role="group" aria-label="Nivel">
+    <button type="button" data-lv="facil" aria-pressed="false">Fácil</button>
+    <button type="button" data-lv="medio" aria-pressed="true">Medio</button>
+    <button type="button" data-lv="dificil" aria-pressed="false">Difícil</button>
+  </div>
+  <p class="mute small" id="lvDesc" style="margin-top:8px"></p>
+  <h2>Reglas de este nivel</h2>
+  <ul class="rules" id="ruleList"></ul>
+  <div class="row">
+    <button class="primary" id="btnDaily" type="button">Reto del día</button>
+    <button id="btnFree" type="button">Partida libre</button>
+  </div>
+  <p class="mute small" style="margin-top:12px">El reto del día es siempre de nivel medio, con la misma letra para todos, y mantiene tu racha si no cometes errores. Si una palabra acaba en K, W, X, Y, Z, Ñ, Q o J, la siguiente empieza por la letra anterior que sí se pueda encadenar.</p>
+</section>
+
+<section id="game" class="panel" hidden>
+  <div class="hud">
+    <div class="time" id="time">90</div>
+    <div class="bar" id="bar"><div id="barFill"></div></div>
+    <div class="pts" id="pts">0 pts</div>
+  </div>
+  <ol class="chain" id="chain"></ol>
+  <form id="form" autocomplete="off">
+    <input type="text" id="inp" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Tu palabra" placeholder="Escribe tu palabra">
+    <button class="primary" type="submit">OK</button>
+  </form>
+  <p class="msg" id="msg" aria-live="polite"></p>
+  <div class="row" style="margin-top:6px">
+    <button id="btnHint" type="button">Pista (−3 pts)</button>
+    <button id="btnQuit" type="button">Abandonar</button>
+  </div>
+</section>
+
+<section id="result" class="panel" hidden>
+  <span class="badge" id="rBadge">Cadena perfecta</span>
+  <div class="big" id="rScore">0</div>
+  <p class="mute" id="rText"></p>
+  <table id="rTable"></table>
+  <textarea id="shareBox" rows="3" readonly aria-label="Texto para compartir"></textarea>
+  <div class="row">
+    <button class="primary" id="btnShare" type="button">Copiar resultado</button>
+    <button id="btnAgain" type="button">Volver</button>
+  </div>
+</section>
+</main>
+
+<script>
+(function(){
+"use strict";
+var COMMON=("amor casa mesa mar madera mano mundo montana musica martes mirada memoria maleta manzana animal arena agua alma almendra aventura bandera barco botella barrio caballo camino ciudad cancion cantante cascada campana catedral carretera danza dama diamante delfin escalera estrella espejo familia farol fuego flor gato guitarra galaxia hermana historia isla jardin lampara libro lago mariposa naranja noche nube oceano ordenador palabra pajaro paraguas playa puerta planeta ventana valle viaje violeta zapato cuaderno cabana calendario capital chocolate carnaval cocodrilo corazon dinosaurio dragon desierto estacion elefante espalda ensalada fantasma fotografia frontera granja gigante gimnasio helado hospital huracan imagen invierno instrumento jirafa lavanda leyenda lluvia maravilla mercado miercoles monstruo naturaleza navegante nuevo octubre orquesta pantalla paisaje panadero pastel pelicula pirata princesa pueblo quimica rascacielos radio rayo relato relampago rosa sabana sandalia semana serpiente silencio sombrero tarde tambor tormenta tesoro telefono tortuga trabajo universidad unicornio vacaciones vainilla vecino verano volcan vestido biblioteca bicicleta bailarina balcon banana cabeza cafe camara camiseta cantina caracol cartera castillo cebolla cena cielo cinta circulo cocina colina comida cordillera cuadro cuchara dedo desayuno diccionario domingo ducha edificio escuela espacio estanteria fabrica fiesta fruta gafas gaviota gusano habitacion hamaca hormiga hoja invitado jabon jugador juguete kilometro laberinto ladrillo lapiz lectura leon llave madrugada mapa maquina marinero medalla melodia mochila molino motor nacion nadador nariz nevada olivar olla paloma pantalon papel parque pasillo pasajero pelota peluca pintura pistacho pizarra poema puente rana ratones reloj rinoceronte rutina sabor salamandra salvaje sandia sendero sillon sol taza tejado teatro tienda tigre toalla torre trueno turista vaca vagon vapor vela velero viento vitrina vuelta yate zanahoria zorro").split(" ");
+var ABS=("libertad amistad felicidad esperanza verdad justicia paz alegria tristeza nostalgia memoria sabiduria paciencia valentia lealtad soledad curiosidad armonia ilusion imaginacion creatividad belleza bondad generosidad humildad gratitud confianza tolerancia respeto honestidad ambicion pasion tranquilidad serenidad igualdad fraternidad democracia ciudadania inteligencia conciencia existencia realidad fantasia amabilidad sinceridad disciplina responsabilidad fortaleza dignidad rebeldia tradicion cultura ciencia filosofia arte destino fortuna suerte esfuerzo constancia perseverancia determinacion voluntad vanidad envidia orgullo rencor venganza miedo ansiedad angustia desesperacion melancolia ternura carino afecto compasion empatia solidaridad cortesia elegancia equilibrio simetria infinito eternidad inmortalidad mortalidad vejez juventud infancia adolescencia madurez experiencia aprendizaje conocimiento comprension razonamiento reflexion intuicion percepcion sensacion emocion sentimiento pensamiento idea teoria hipotesis probabilidad casualidad causalidad necesidad posibilidad capacidad habilidad destreza maestria autoridad poder soberania nacionalidad identidad personalidad originalidad autenticidad naturalidad espontaneidad nobleza sencillez claridad oscuridad abundancia escasez prosperidad pobreza riqueza").split(" ");
+var COMMONSET={},ABSSET={};
+COMMON.forEach(function(w){COMMONSET[w]=1});
+ABS.forEach(function(w){ABSSET[w]=1;COMMONSET[w]=1});
+var ABSRE=/(dad|cion|sion|eza|ismo|encia|ancia|tud|miento|anza|ura|ia|ez)$/;
+var BAD="kwxyñqzj",SEEDS="cmpstdrlbfgnv".split("");
+var LV={
+  facil:{n:4,dur:120,d:"4 eslabones y 120 segundos."},
+  medio:{n:5,dur:90,d:"5 eslabones y 90 segundos."},
+  dificil:{n:7,dur:90,d:"7 eslabones y 90 segundos, con palabras cada vez más largas."}
+};
+var $=function(i){return document.getElementById(i)};
+var KEY="cadena-palabras-lg";
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return {}}}
+function save(o){try{localStorage.setItem(KEY,JSON.stringify(o))}catch(e){}}
+function norm(s){return s.toLowerCase().trim().replace(/ñ/g,"§").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/§/g,"ñ")}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function dstr(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function today(){return dstr(new Date())}
+function yesterday(){var d=new Date();d.setDate(d.getDate()-1);return dstr(d)}
+function dailySeed(){var s=today(),h=0;for(var i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0;return SEEDS[h%SEEDS.length]}
+function nextLetter(w){var n=norm(w);for(var i=n.length-1;i>=0;i--){if(BAD.indexOf(n[i])<0)return n[i]}return n[n.length-1]}
+
+var st={level:"medio",n:5,dur:90,mode:"daily",seed:"m",words:[],disp:[],errors:0,hints:0,hintPts:0,left:90,t0:0,timer:null,over:false,busy:false};
+var cache={};
+
+function ruleFor(i){
+  var r={a:i>=2,min:0,abs:false};
+  if(i===3||i===4)r.min=7;
+  if(i===5)r.min=8;
+  if(i===6)r.min=9;
+  r.abs=(i===4||i===6);
+  return r;
+}
+function startLetterFor(i){return i===0?st.seed:nextLetter(st.words[i-1])}
+function chipsFor(i){
+  var r=ruleFor(i),c=["Empieza por "+startLetterFor(i).toUpperCase()];
+  if(r.a)c.push("Contiene A");
+  if(r.min)c.push(r.min+"+ letras");
+  if(r.abs)c.push("Sustantivo abstracto");
+  return c;
+}
+function isAbstract(n){return !!ABSSET[n]||(n.length>=6&&ABSRE.test(n))}
+function plausible(n){
+  if(n.length<3||!/[aeiou]/.test(n))return false;
+  if(/(.)\1\1/.test(n)||/[^aeiou]{5,}/.test(n))return false;
+  return (n.match(/[aeiou]/g)||[]).length/n.length>=0.25;
+}
+function validate(raw,i){
+  var n=norm(raw);
+  if(!n)return {ok:false,msg:"Escribe una palabra."};
+  if(!/^[a-zñ]+$/.test(n))return {ok:false,msg:"Solo letras, sin espacios ni números."};
+  var r=ruleFor(i),s=startLetterFor(i);
+  if(n[0]!==s)return {ok:false,msg:"Tiene que empezar por "+s.toUpperCase()+"."};
+  if(r.a&&n.indexOf("a")<0)return {ok:false,msg:"Tiene que contener la letra A."};
+  if(r.min&&n.length<r.min)return {ok:false,msg:"Necesita al menos "+r.min+" letras (tiene "+n.length+")."};
+  for(var k=0;k<st.words.length;k++)if(norm(st.words[k])===n)return {ok:false,msg:"Ya usaste esa palabra."};
+  if(r.abs&&!isAbstract(n))return {ok:false,msg:"Tiene que ser un sustantivo abstracto (libertad, esperanza…)."};
+  var known=!!COMMONSET[n];
+  if(!known&&!plausible(n))return {ok:false,msg:"No parece una palabra española."};
+  return {ok:true,n:n,known:known};
+}
+
+function ruleText(i){
+  if(i===0)return "Empieza por la letra del día.";
+  var r=ruleFor(i),x=[];
+  if(r.a)x.push("contiene la letra A");
+  if(r.min)x.push("tiene al menos "+r.min+" letras");
+  if(r.abs)x.push("es un sustantivo abstracto");
+  return "Empieza por la última letra de la anterior"+(x.length?", "+x.join(", "):"")+".";
+}
+function renderRules(){
+  var h="";
+  for(var i=0;i<LV[st.level].n;i++)h+="<li><i>"+(i+1)+"</i><span>"+ruleText(i)+"</span></li>";
+  $("ruleList").innerHTML=h;
+  $("lvDesc").textContent=LV[st.level].d;
+  Array.prototype.forEach.call(document.querySelectorAll("[data-lv]"),function(b){
+    b.setAttribute("aria-pressed",String(b.getAttribute("data-lv")===st.level));
+  });
+}
+
+function render(){
+  var h="";
+  for(var i=0;i<st.n;i++){
+    var cls=i<st.words.length?"done":(i===st.words.length&&!st.over?"active":"locked"),inner,letter;
+    if(i<st.words.length){
+      var w=st.disp[i];
+      inner='<div class="word"><b>'+esc(w.charAt(0).toUpperCase())+'</b>'+esc(w.slice(1,-1))+'<b>'+esc(w.slice(-1))+'</b></div>';
+      letter=w.charAt(0).toUpperCase();
+    }else if(i===st.words.length&&!st.over){
+      inner='<div class="chips">'+chipsFor(i).map(function(c){return '<span class="chip">'+c+'</span>'}).join("")+'</div>';
+      letter=startLetterFor(i).toUpperCase();
+    }else{
+      var r=ruleFor(i),t=[];
+      if(r.a)t.push("A");
+      if(r.min)t.push(r.min+"+");
+      if(r.abs)t.push("abstracto");
+      inner='<div class="chips"><span class="chip">'+(i===0?"Letra del día":"Última letra")+(t.length?" · "+t.join(" · "):"")+'</span></div>';
+      letter="·";
+    }
+    h+='<li class="link '+cls+'"><div class="node">'+esc(letter)+'</div><div class="body">'+inner+'</div></li>';
+  }
+  $("chain").innerHTML=h;
+}
+
+function score(){
+  var s=0;
+  st.words.forEach(function(w){var n=norm(w);s+=n.length;if(COMMONSET[n])s+=2;if(n.length>=10)s+=5});
+  return Math.max(0,s-st.hintPts);
+}
+function updateHud(){
+  var t=Math.max(0,st.left);
+  $("time").textContent=Math.ceil(t);
+  $("time").classList.toggle("low",t<=15);
+  $("bar").classList.toggle("low",t<=15);
+  $("barFill").style.transform="scaleX("+(t/st.dur)+")";
+  $("pts").textContent=score()+" pts";
+}
+function tick(){
+  st.left=st.dur-(performance.now()-st.t0)/1000;
+  if(st.left<=0){st.left=0;updateHud();finish(false)}else updateHud();
+}
+function setMsg(t,c){var m=$("msg");m.textContent=t||"";m.className="msg"+(c?" "+c:"")}
+
+function begin(mode){
+  var level=mode==="daily"?"medio":st.level,L=LV[level];
+  st.mode=mode;st.n=L.n;st.dur=L.dur;st.playLevel=level;
+  st.seed=mode==="daily"?dailySeed():SEEDS[Math.floor(Math.random()*SEEDS.length)];
+  st.words=[];st.disp=[];st.errors=0;st.hints=0;st.hintPts=0;st.over=false;st.busy=false;st.left=st.dur;
+  $("start").hidden=true;$("result").hidden=true;$("game").hidden=false;
+  render();setMsg("");updateHud();
+  $("inp").value="";$("inp").disabled=false;$("btnHint").disabled=false;
+  st.t0=performance.now();
+  clearInterval(st.timer);st.timer=setInterval(tick,200);
+  setTimeout(function(){$("inp").focus()},50);
+}
+
+function reject(msg){
+  st.errors++;setMsg(msg,"err");
+  var f=$("form");f.classList.remove("shake");void f.offsetWidth;f.classList.add("shake");
+  $("inp").focus();
+}
+function accept(v,raw,msg){
+  st.words.push(v.n);st.disp.push(raw.toLowerCase().trim());$("inp").value="";
+  setMsg(msg,"ok");
+  if(st.words.length>=st.n){render();updateHud();finish(true);return}
+  render();updateHud();$("inp").focus();
+}
+function checkOnline(raw){
+  var w=raw.toLowerCase().trim();
+  if(w in cache)return Promise.resolve(cache[w]);
+  var ctl=typeof AbortController!=="undefined"?new AbortController():null;
+  var to=setTimeout(function(){if(ctl)ctl.abort()},3000);
+  var url="https://es.wiktionary.org/w/api.php?action=query&format=json&origin=*&titles="+encodeURIComponent(w);
+  return fetch(url,ctl?{signal:ctl.signal}:{})
+    .then(function(r){return r.json()})
+    .then(function(j){
+      clearTimeout(to);
+      var p=j&&j.query&&j.query.pages;if(!p)return null;
+      var pg=p[Object.keys(p)[0]];
+      var ok=!(pg&&("missing" in pg||"invalid" in pg));
+      cache[w]=ok;return ok;
+    })
+    .catch(function(){clearTimeout(to);return null});
+}
+function onSubmit(e){
+  e.preventDefault();
+  if(st.over||st.busy)return;
+  var raw=$("inp").value,v=validate(raw,st.words.length);
+  if(!v.ok){reject(v.msg);return}
+  if(v.known){accept(v,raw,"Palabra reconocida.");return}
+  st.busy=true;setMsg("Comprobando en el diccionario…","");
+  checkOnline(raw).then(function(r){
+    st.busy=false;
+    if(st.over)return;
+    if(r===false){reject("No encuentro esa palabra en el diccionario. Prueba con las tildes.");return}
+    if(r===true){COMMONSET[v.n]=1;accept(v,raw,"Palabra verificada en el diccionario.");return}
+    accept(v,raw,"Aceptada sin verificar (sin conexión con el diccionario).");
+  });
+}
+
+function hint(){
+  if(st.over)return;
+  var i=st.words.length,pool=COMMON.concat(ABS),r=ruleFor(i),c=[];
+  for(var k=0;k<pool.length;k++){
+    var w=pool[k],used=false;
+    for(var j=0;j<st.words.length;j++)if(norm(st.words[j])===w)used=true;
+    if(used||w[0]!==startLetterFor(i))continue;
+    if(r.a&&w.indexOf("a")<0)continue;
+    if(r.min&&w.length<r.min)continue;
+    if(r.abs&&!isAbstract(w))continue;
+    c.push(w);
+  }
+  if(!c.length){setMsg("No tengo pista para este eslabón. Tú puedes más.","");return}
+  var w=c[Math.floor(Math.random()*c.length)];
+  st.hints++;st.hintPts+=3;updateHud();
+  setMsg("Pista: "+w.slice(0,2).toUpperCase()+" "+new Array(w.length-1).join("_ ")+" ("+w.length+" letras)","");
+  $("inp").focus();
+}
+
+function finish(win){
+  if(st.over)return;
+  st.over=true;clearInterval(st.timer);
+  $("inp").disabled=true;$("btnHint").disabled=true;
+  var d=load(),done=st.words.length,base=score(),speed=win?Math.round(st.left):0,total=base+speed;
+  var perfect=win&&st.errors===0;
+  var counts=st.mode==="daily"&&d.dailyDone!==today();
+  if(win)d.w=(d.w||0)+1;
+  if(counts){
+    d.dailyDone=today();
+    if(perfect){
+      d.streak=(d.last===yesterday())?(d.streak||0)+1:(d.last===today()?(d.streak||1):1);
+      d.last=today();
+    }else d.streak=0;
+  }
+  if(win&&total>(d.best||0))d.best=total;
+  save(d);
+  showResult(win,perfect,done,base,speed,total,counts,d);
+}
+
+function showResult(win,perfect,done,base,speed,total,counts,d){
+  $("game").hidden=true;$("result").hidden=false;
+  var b=$("rBadge");
+  b.textContent=perfect?"Cadena perfecta":(win?"Cadena completa":"Tiempo agotado");
+  b.className="badge"+(win?"":" no");
+  $("rScore").textContent=total+" pts";
+  var txt=win?(perfect?"Sin un solo error.":st.errors+" intento"+(st.errors===1?"":"s")+" rechazado"+(st.errors===1?"":"s")+"."):"Completaste "+done+" de "+st.n+" eslabones.";
+  if(st.mode==="daily"&&!counts)txt+=" El reto de hoy ya estaba jugado, esta partida no cambia tu racha.";
+  else if(st.mode==="daily"&&perfect)txt+=" Racha: "+(d.streak||0)+" día"+((d.streak||0)===1?"":"s")+".";
+  else if(st.mode==="daily")txt+=" La racha vuelve a cero.";
+  $("rText").textContent=txt;
+  var rows=[["Palabras ("+done+")",base+st.hintPts],["Bonus de velocidad",speed]];
+  if(st.hintPts)rows.push(["Pistas ("+st.hints+")","−"+st.hintPts]);
+  $("rTable").innerHTML=rows.map(function(r){return "<tr><td>"+esc(r[0])+"</td><td>"+esc(r[1])+"</td></tr>"}).join("");
+  var dt=new Date(),letters=[];
+  for(var i=0;i<st.n;i++)letters.push(i<st.words.length?st.disp[i].charAt(0).toUpperCase():"·");
+  $("shareBox").value="Cadena de palabras "+String(dt.getDate()).padStart(2,"0")+"/"+String(dt.getMonth()+1).padStart(2,"0")+(st.mode==="daily"?" (reto del día)":" ("+st.playLevel+")")+"\n"+letters.join(" → ")+"\n"+done+"/"+st.n+" · "+total+" pts"+(perfect?" · cadena perfecta":"");
+  $("btnShare").textContent="Copiar resultado";
+  refreshStats();
+}
+
+function refreshStats(){
+  var d=load(),s=0;
+  if(d.last===today()||d.last===yesterday())s=d.streak||0;
+  $("stW").textContent=d.w||0;$("stS").textContent=s;$("stB").textContent=d.best||0;
+}
+function home(){
+  clearInterval(st.timer);
+  $("game").hidden=true;$("result").hidden=true;$("start").hidden=false;
+  var d=load(),done=d.dailyDone===today();
+  $("seedLetter").textContent=dailySeed().toUpperCase();
+  $("seedLabel").textContent=done?"Letra del día · reto completado":"Letra del día";
+  $("btnDaily").textContent=done?"Repetir el reto (sin racha)":"Reto del día";
+  renderRules();refreshStats();
+}
+function share(){
+  var box=$("shareBox"),t=box.value;
+  function fb(){box.focus();box.select();$("btnShare").textContent="Selecciona y copia"}
+  try{
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(function(){$("btnShare").textContent="Copiado"},fb);
+    else fb();
+  }catch(e){fb()}
+}
+
+$("form").addEventListener("submit",onSubmit);
+$("btnHint").addEventListener("click",hint);
+$("btnQuit").addEventListener("click",function(){if(!st.over){st.errors++;finish(false)}});
+$("btnDaily").addEventListener("click",function(){begin("daily")});
+$("btnFree").addEventListener("click",function(){begin("free")});
+$("btnAgain").addEventListener("click",home);
+$("btnShare").addEventListener("click",share);
+Array.prototype.forEach.call(document.querySelectorAll("[data-lv]"),function(b){
+  b.addEventListener("click",function(){st.level=b.getAttribute("data-lv");renderRules()});
+});
+home();
+})();
+</script>
+<script src="ayuda.js" data-juego="cadena-de-palabras"></script>
+</body>
+</html>

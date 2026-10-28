@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dilema del orden</title>
+<style>
+:root{--bg:#f4f1ea;--panel:#fffdf8;--ink:#22201c;--mute:#756f64;--line:#d9d2c3;--accent:#22201c;--good:#2f7d4f;--bad:#b3392f;--cold:#2c6fd1;--hot:#d9532b}
+@media (prefers-color-scheme:dark){:root{--bg:#151412;--panel:#201e1b;--ink:#efebe2;--mute:#9a9486;--line:#38342d;--accent:#efebe2;--good:#6fcf97;--bad:#ff8a80;--cold:#6ea8ff;--hot:#ff8a5c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 Georgia,serif;display:flex;justify-content:center}
+main{width:100%;max-width:560px;padding:22px max(16px,env(safe-area-inset-right,0px)) 48px max(16px,env(safe-area-inset-left,0px))}
+a.back{color:var(--mute);font-size:.9rem;text-decoration:none}
+a.back:hover{color:var(--ink);text-decoration:underline}
+h1{font-size:2rem;margin:6px 0 4px;letter-spacing:-.01em}
+.sub{color:var(--mute);margin:0 0 14px}
+.stats{display:flex;gap:16px;flex-wrap:wrap;color:var(--mute);font-size:.9rem;margin:0 0 16px}
+.stats b{color:var(--ink);font-variant-numeric:tabular-nums}
+.panel{background:var(--panel);border:1.5px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+.panel[hidden]{display:none}
+h2{font-size:.8rem;margin:16px 0 6px;color:var(--mute);text-transform:uppercase;letter-spacing:.08em;font-weight:normal}
+h2:first-child{margin-top:0}
+.mute{color:var(--mute)}
+.small{font-size:.88rem}
+p{margin:0}
+button{font:inherit;cursor:pointer;border-radius:10px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);padding:10px 14px;min-height:44px}
+button:hover:not(:disabled){border-color:var(--accent)}
+button.primary{background:var(--accent);color:var(--panel);border-color:var(--accent)}
+button:disabled{opacity:.5;cursor:default}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.seg{display:flex;border:1.5px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{flex:1;border:0;border-radius:0;min-height:42px}
+.seg button+button{border-left:1.5px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--panel)}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.row>button{flex:1 1 140px}
+.hud{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.time{font-size:1.7rem;font-variant-numeric:tabular-nums}
+.time.low{color:var(--bad)}
+.att{color:var(--mute);font-size:.9rem}
+.goal{margin:6px 0 12px}
+.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;counter-reset:pos;user-select:none;-webkit-user-select:none}
+.list li{counter-increment:pos;display:grid;grid-template-columns:24px minmax(0,1fr) auto;align-items:center;gap:8px;background:var(--bg);border:1.5px solid var(--line);border-radius:12px;padding:4px 4px 4px 12px}
+.list li::before{content:counter(pos);color:var(--mute);font-size:.9rem}
+.list li.drag{border-color:var(--accent);box-shadow:0 6px 18px rgba(0,0,0,.2);background:var(--panel)}
+.txt{font-size:1.1rem;overflow-wrap:anywhere}
+.ctl{display:flex;align-items:center}
+.ctl button{min-height:40px;min-width:40px;padding:0;border:0;background:transparent;color:var(--mute);font-size:.95rem}
+.ctl button:hover:not(:disabled){color:var(--ink)}
+.grip{touch-action:none;cursor:grab;font-size:1.2rem!important;letter-spacing:-2px}
+.fb{margin-top:14px;display:flex;flex-direction:column;gap:8px}
+.fbrow{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.count{font-size:2.2rem;line-height:1}
+.chip{font-size:.8rem;padding:2px 10px;border-radius:99px;border:1.5px solid var(--line)}
+.chip.c{color:var(--hot);border-color:var(--hot)}
+.chip.f{color:var(--cold);border-color:var(--cold)}
+.temp{height:10px;border-radius:99px;background:linear-gradient(90deg,var(--cold),var(--hot));position:relative;margin:4px 0}
+.temp i{position:absolute;top:-5px;width:4px;height:20px;border-radius:2px;background:var(--ink);left:0;transform:translateX(-50%);transition:left .35s}
+.scale{display:flex;justify-content:space-between;color:var(--mute);font-size:.8rem}
+.hist{display:flex;gap:6px;flex-wrap:wrap}
+.hist span{font-size:.78rem;color:var(--mute);border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-variant-numeric:tabular-nums}
+.big{font-size:3rem;line-height:1;letter-spacing:-.02em;margin:10px 0 6px;font-variant-numeric:tabular-nums}
+.badge{display:inline-block;padding:3px 12px;border-radius:99px;font-size:.85rem;background:var(--good);color:var(--bg)}
+.badge.no{background:var(--line);color:var(--ink)}
+table{width:100%;border-collapse:collapse;font-size:.95rem;margin-top:10px}
+td{padding:6px 0;border-bottom:1px solid var(--line);vertical-align:top}
+td:first-child{color:var(--mute);width:38%;padding-right:8px}
+.ans{margin:6px 0 0;padding-left:22px}
+textarea{width:100%;font:inherit;font-size:.85rem;border-radius:10px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);padding:10px;resize:none;margin-top:12px}
+@media (prefers-reduced-motion:reduce){.temp i{transition:none}}
+</style>
+</head>
+<body>
+<main>
+<a class="back" href="index.html">← Todos los juegos</a>
+<h1>Dilema del orden</h1>
+<p class="sub">Ordena 6 elementos descubriendo la regla secreta.</p>
+<p class="stats"><span>Ganadas: <b id="stW">0</b></span><span>Racha: <b id="stS">0</b></span><span>Mejor tiempo: <b id="stB">--:--</b></span></p>
+
+<section id="start" class="panel">
+  <h2>Nivel</h2>
+  <div class="seg" role="group" aria-label="Nivel">
+    <button type="button" data-lv="facil" aria-pressed="false">Fácil</button>
+    <button type="button" data-lv="medio" aria-pressed="true">Medio</button>
+    <button type="button" data-lv="dificil" aria-pressed="false">Difícil</button>
+  </div>
+  <p class="mute small" id="lvDesc" style="margin-top:8px"></p>
+  <h2>Modo</h2>
+  <div class="seg" role="group" aria-label="Modo">
+    <button type="button" data-mode="ord" aria-pressed="true">Ordenar</button>
+    <button type="button" data-mode="inv" aria-pressed="false">Orden inverso</button>
+  </div>
+  <p class="mute small" id="modeDesc" style="margin-top:8px"></p>
+  <h2>Tiempo</h2>
+  <div class="seg" role="group" aria-label="Tiempo">
+    <button type="button" data-clock="0" aria-pressed="true">Sin límite</button>
+    <button type="button" data-clock="1" aria-pressed="false">Contrarreloj</button>
+  </div>
+  <p class="mute small" id="clockDesc" style="margin-top:8px"></p>
+  <div class="row">
+    <button class="primary" id="btnDaily" type="button">Reto del día</button>
+    <button id="btnFree" type="button">Partida libre</button>
+  </div>
+  <p class="mute small" style="margin-top:12px">El reto del día es siempre de nivel medio, en modo Ordenar y sin límite de tiempo. Todos reciben el mismo puzle, y la racha sube un día por cada reto resuelto.</p>
+</section>
+
+<section id="game" class="panel" hidden>
+  <div class="hud">
+    <div class="time" id="time">00:00</div>
+    <div class="att" id="att">0 intentos</div>
+  </div>
+  <p class="goal mute small" id="goal"></p>
+  <ol class="list" id="list"></ol>
+  <div class="row" style="margin-top:12px">
+    <button class="primary" id="btnCheck" type="button" style="flex:2 1 160px">Comprobar</button>
+    <button id="btnQuit" type="button">Rendirme</button>
+  </div>
+  <div class="fb" aria-live="polite">
+    <div class="fbrow"><span class="count" id="fbCount">–</span><span class="mute" id="fbLabel">Ordena y pulsa Comprobar.</span><span id="fbTrend"></span></div>
+    <div id="thermo">
+      <div class="temp" aria-hidden="true"><i id="mark"></i></div>
+      <div class="scale"><span>Frío</span><span>Caliente</span></div>
+    </div>
+    <div class="hist" id="hist"></div>
+  </div>
+</section>
+
+<section id="result" class="panel" hidden>
+  <span class="badge" id="rBadge">Resuelto</span>
+  <div class="big" id="rTime">00:00</div>
+  <p class="mute" id="rText"></p>
+  <table id="rTable"></table>
+  <h2>Orden final</h2>
+  <ol class="ans" id="rAns"></ol>
+  <textarea id="shareBox" rows="3" readonly aria-label="Texto para compartir"></textarea>
+  <div class="row">
+    <button class="primary" id="btnShare" type="button">Copiar resultado</button>
+    <button id="btnAgain" type="button">Volver</button>
+  </div>
+</section>
+</main>
+
+<script>
+(function(){
+"use strict";
+var $=function(i){return document.getElementById(i)};
+var PUZ=[
+ {t:"Planetas",c:[
+  {n:"distancia al Sol, del más cercano al más lejano",o:["Mercurio","Venus","Tierra","Marte","Júpiter","Saturno"]},
+  {n:"tamaño, de menor a mayor",o:["Mercurio","Marte","Venus","Tierra","Saturno","Júpiter"]},
+  {n:"orden alfabético",o:["Júpiter","Marte","Mercurio","Saturno","Tierra","Venus"]}]},
+ {t:"Animales",c:[
+  {n:"peso, de menor a mayor",o:["Hormiga","Gato","Perro","Caballo","Elefante","Ballena"]},
+  {n:"orden alfabético",o:["Ballena","Caballo","Elefante","Gato","Hormiga","Perro"]},
+  {n:"esperanza de vida típica, de menor a mayor",o:["Hormiga","Perro","Gato","Caballo","Elefante","Ballena"]}]},
+ {t:"Historia",c:[
+  {n:"cronológico, del más antiguo al más reciente",o:["Descubrimiento de América","Independencia de EE. UU.","Revolución Francesa","Primera Guerra Mundial","Llegada a la Luna","Caída del Muro de Berlín"]},
+  {n:"orden alfabético",o:["Caída del Muro de Berlín","Descubrimiento de América","Independencia de EE. UU.","Llegada a la Luna","Primera Guerra Mundial","Revolución Francesa"]},
+  {n:"cronológico inverso, del más reciente al más antiguo",o:["Caída del Muro de Berlín","Llegada a la Luna","Primera Guerra Mundial","Revolución Francesa","Independencia de EE. UU.","Descubrimiento de América"]}]},
+ {t:"Ciudades",c:[
+  {n:"población, de menor a mayor",o:["Bilbao","Málaga","Sevilla","Valencia","Barcelona","Madrid"]},
+  {n:"orden alfabético",o:["Barcelona","Bilbao","Madrid","Málaga","Sevilla","Valencia"]},
+  {n:"posición, de norte a sur",o:["Bilbao","Barcelona","Madrid","Valencia","Sevilla","Málaga"]}]},
+ {t:"Números",c:[
+  {n:"valor, de menor a mayor",o:["3","7","12","45","64","100"]},
+  {n:"alfabético al escribirlos con letras",o:["100","45","12","64","7","3"]},
+  {n:"valor, de mayor a menor",o:["100","64","45","12","7","3"]}]},
+ {t:"Plantar un árbol",c:[
+  {n:"orden lógico del proceso",o:["Elegir la especie","Cavar un hoyo","Colocar el árbol","Tapar con tierra","Regar","Esperar a que crezca"]},
+  {n:"orden alfabético",o:["Cavar un hoyo","Colocar el árbol","Elegir la especie","Esperar a que crezca","Regar","Tapar con tierra"]}]},
+ {t:"Colores",c:[
+  {n:"orden del arcoíris",o:["Rojo","Naranja","Amarillo","Verde","Azul","Violeta"]},
+  {n:"orden alfabético",o:["Amarillo","Azul","Naranja","Rojo","Verde","Violeta"]}]},
+ {t:"Montañas",c:[
+  {n:"altura, de menor a mayor",o:["Teide","Mont Blanc","Kilimanjaro","Aconcagua","K2","Everest"]},
+  {n:"orden alfabético",o:["Aconcagua","Everest","K2","Kilimanjaro","Mont Blanc","Teide"]}]},
+ {t:"Mezcla",c:[
+  {n:"categoría (animales, planetas, verduras) y alfabético dentro de cada una",o:["Gato","Perro","Júpiter","Marte","Saturno","Cebolla"]},
+  {n:"orden alfabético",o:["Cebolla","Gato","Júpiter","Marte","Perro","Saturno"]}]},
+ {t:"Semana",c:[
+  {n:"orden de la semana",o:["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"]},
+  {n:"orden alfabético",o:["Jueves","Lunes","Martes","Miércoles","Sábado","Viernes"]}]},
+ {t:"Unidades de tiempo",c:[
+  {n:"duración, de menor a mayor",o:["Segundo","Minuto","Hora","Día","Semana","Mes"]},
+  {n:"orden alfabético",o:["Día","Hora","Mes","Minuto","Segundo","Semana"]},
+  {n:"duración, de mayor a menor",o:["Mes","Semana","Día","Hora","Minuto","Segundo"]}]},
+ {t:"Continentes",c:[
+  {n:"superficie, de menor a mayor",o:["Oceanía","Europa","Antártida","África","América","Asia"]},
+  {n:"orden alfabético",o:["África","América","Antártida","Asia","Europa","Oceanía"]}]}
+];
+PUZ=PUZ.filter(function(p){
+  var base=p.c[0].o.slice().sort().join("|");
+  return p.c.every(function(c){return c.o.length===6&&c.o.slice().sort().join("|")===base});
+});
+
+var LV={
+  facil:{twist:false,thermo:true,clock:240,d:"La regla no cambia. Ves el termómetro y el «más cerca / más lejos»."},
+  medio:{twist:true,thermo:true,clock:180,d:"La regla cambia en silencio cuando aciertas 3 elementos."},
+  dificil:{twist:true,thermo:false,clock:120,d:"Como medio, pero sin termómetro ni «más cerca / más lejos»: solo el número de aciertos."}
+};
+var MAXD=18,KEY="dilema-orden-lg";
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return {}}}
+function save(o){try{localStorage.setItem(KEY,JSON.stringify(o))}catch(e){}}
+function dstr(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function today(){return dstr(new Date())}
+function yesterday(){var d=new Date();d.setDate(d.getDate()-1);return dstr(d)}
+function hash(s){var h=2166136261;for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+function rng(seed){var a=seed>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function fmt(s){s=Math.max(0,Math.ceil(s));return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+
+var opt={level:"medio",inverse:false,clock:false};
+var g={over:true,timer:null};
+
+function correct(arr,t){var k=0;for(var i=0;i<arr.length;i++)if(arr[i]===t[i])k++;return k}
+function foot(arr,t){var d=0;for(var i=0;i<arr.length;i++)d+=Math.abs(i-t.indexOf(arr[i]));return d}
+
+function setup(daily){
+  var r=daily?rng(hash("dilema"+today())):rng((Math.random()*4294967296)>>>0);
+  var level=daily?"medio":opt.level,L=LV[level];
+  var inverse=daily?false:opt.inverse,twist=L.twist&&!inverse;
+  var clock=daily?false:opt.clock;
+  var p=PUZ[Math.floor(r()*PUZ.length)],pairs=[];
+  for(var a=0;a<p.c.length;a++)for(var b=0;b<p.c.length;b++)if(a!==b)pairs.push({a:a,b:b,k:correct(p.c[a].o,p.c[b].o)});
+  var mn=Math.min.apply(null,pairs.map(function(x){return x.k}));
+  var pool=pairs.filter(function(x){return x.k<=Math.max(1,mn)});
+  var pr=pool[Math.floor(r()*pool.length)];
+  var crit=[p.c[pr.a],p.c[pr.b]],arr;
+  if(inverse){
+    arr=crit[0].o.slice();
+    var i=Math.floor(r()*6),j;
+    do{j=Math.floor(r()*6)}while(Math.abs(i-j)<2);
+    var it=arr.splice(i,1)[0];arr.splice(j,0,it);
+  }else{
+    var tries=0;
+    do{
+      arr=crit[0].o.slice();
+      for(var x=arr.length-1;x>0;x--){var y=Math.floor(r()*(x+1));var tmp=arr[x];arr[x]=arr[y];arr[y]=tmp}
+      tries++;
+    }while(tries<80&&(correct(arr,crit[0].o)>1||(twist&&correct(arr,crit[1].o)>1)));
+  }
+  g={puz:p,crit:crit,stage:0,arr:arr,prevD:null,attempts:0,switchedAt:0,hist:[],over:false,daily:daily,
+     inverse:inverse,twist:twist,thermo:L.thermo,level:level,limit:clock?L.clock:0,t0:0,timer:null};
+}
+
+function renderList(){
+  $("list").innerHTML=g.arr.map(function(w){
+    return '<li data-w="'+esc(w)+'"><span class="txt">'+esc(w)+'</span><span class="ctl">'
+      +'<button type="button" class="up" aria-label="Subir '+esc(w)+'">▲</button>'
+      +'<button type="button" class="dn" aria-label="Bajar '+esc(w)+'">▼</button>'
+      +'<button type="button" class="grip" aria-label="Arrastrar '+esc(w)+'">⋮⋮</button></span></li>';
+  }).join("");
+}
+function readOrder(){return Array.prototype.map.call($("list").children,function(li){return li.getAttribute("data-w")})}
+
+var drag=null;
+function bindList(){
+  var L=$("list");
+  L.addEventListener("click",function(e){
+    if(g.over)return;
+    var b=e.target.closest("button");if(!b)return;
+    var li=b.closest("li"),k=null;
+    if(b.classList.contains("up")){k=".up";if(li.previousElementSibling)L.insertBefore(li,li.previousElementSibling)}
+    else if(b.classList.contains("dn")){k=".dn";if(li.nextElementSibling)L.insertBefore(li.nextElementSibling,li)}
+    if(k){var nb=li.querySelector(k);if(nb)nb.focus()}
+  });
+  L.addEventListener("pointerdown",function(e){
+    if(g.over)return;
+    var h=e.target.closest(".grip");if(!h)return;
+    drag=h.closest("li");drag.classList.add("drag");
+    try{L.setPointerCapture(e.pointerId)}catch(x){}
+    e.preventDefault();
+  });
+  L.addEventListener("pointermove",function(e){
+    if(!drag)return;
+    var y=e.clientY,sibs=Array.prototype.filter.call(L.children,function(c){return c!==drag});
+    for(var i=0;i<sibs.length;i++){
+      var r=sibs[i].getBoundingClientRect();
+      if(y<r.top+r.height/2){if(drag.nextElementSibling!==sibs[i])L.insertBefore(drag,sibs[i]);return}
+    }
+    if(L.lastElementChild!==drag)L.appendChild(drag);
+  });
+  function end(){if(drag){drag.classList.remove("drag");drag=null}}
+  L.addEventListener("pointerup",end);
+  L.addEventListener("pointercancel",end);
+}
+
+function elapsed(){return (performance.now()-g.t0)/1000}
+function tick(){
+  if(g.limit){
+    var left=g.limit-elapsed();
+    $("time").textContent=fmt(left);
+    $("time").classList.toggle("low",left<=20);
+    if(left<=0)giveUp(true);
+  }else $("time").textContent=fmt(Math.floor(elapsed()));
+}
+
+function begin(daily){
+  setup(daily);
+  $("start").hidden=true;$("result").hidden=true;$("game").hidden=false;
+  $("goal").textContent=g.inverse
+    ?"Un elemento está fuera de su sitio. Encuéntralo y colócalo donde toca."
+    :"Ordena los 6 elementos. La regla es secreta"+(g.twist?" y puede cambiar.":".");
+  renderList();
+  $("fbCount").textContent="–";$("fbLabel").textContent="Ordena y pulsa Comprobar.";$("fbTrend").innerHTML="";
+  $("hist").innerHTML="";$("mark").style.left="0%";$("att").textContent="0 intentos";
+  $("thermo").hidden=!g.thermo;
+  $("time").classList.remove("low");
+  $("btnCheck").disabled=false;
+  g.t0=performance.now();
+  clearInterval(g.timer);g.timer=setInterval(tick,500);tick();
+}
+
+function check(){
+  if(g.over)return;
+  var arr=readOrder();g.arr=arr;g.attempts++;
+  var t=g.crit[g.stage].o,k=correct(arr,t);
+  if(g.twist&&g.stage===0&&k>=3){g.stage=1;g.switchedAt=g.attempts;t=g.crit[1].o;k=correct(arr,t)}
+  var d=foot(arr,t),trend=null;
+  if(g.prevD!==null)trend=d<g.prevD?"c":d>g.prevD?"f":"s";
+  g.prevD=d;
+  $("att").textContent=g.attempts+(g.attempts===1?" intento":" intentos");
+  if(k===6){win();return}
+  $("fbCount").textContent=k+"/6";
+  $("fbLabel").textContent="en su sitio";
+  if(g.thermo){
+    $("fbTrend").innerHTML=trend==="c"?'<span class="chip c">Más cerca</span>':trend==="f"?'<span class="chip f">Más lejos</span>':trend==="s"?'<span class="chip">Igual</span>':"";
+    $("mark").style.left=Math.max(0,Math.min(100,(1-d/MAXD)*100))+"%";
+  }else $("fbTrend").innerHTML="";
+  g.hist.push("#"+g.attempts+" · "+k+"/6");
+  $("hist").innerHTML=g.hist.slice(-6).map(function(h){return "<span>"+h+"</span>"}).join("");
+}
+
+function bestKey(){return g.level+(g.inverse?"-inv":"")+(g.limit?"-reloj":"")}
+function win(){
+  g.over=true;clearInterval(g.timer);
+  var secs=elapsed();
+  $("btnCheck").disabled=true;
+  var d=load();
+  d.w=(d.w||0)+1;
+  d.best=d.best||{};
+  var key=bestKey(),prev=d.best[key],now=Math.max(1,Math.ceil(secs)),record=!prev||now<prev;
+  if(record)d.best[key]=now;
+  var counts=g.daily&&d.dailyDone!==today();
+  if(counts){
+    d.dailyDone=today();
+    d.streak=(d.last===yesterday())?(d.streak||0)+1:1;
+    d.last=today();
+  }
+  save(d);
+  showResult(secs,counts,d,false,false,record&&!!prev);
+}
+function giveUp(timeout){
+  if(g.over)return;
+  g.over=true;clearInterval(g.timer);
+  $("btnCheck").disabled=true;
+  showResult(elapsed(),false,load(),true,!!timeout,false);
+}
+
+function showResult(secs,counts,d,lost,timeout,record){
+  $("game").hidden=true;$("result").hidden=false;
+  var detective=!lost&&g.attempts<=8;
+  var b=$("rBadge");
+  b.textContent=timeout?"Tiempo agotado":(lost?"Rendido":(detective?"Detective: pocas pistas":"Resuelto"));
+  b.className="badge"+(detective?"":" no");
+  $("rTime").textContent=fmt(timeout?g.limit:secs);
+  var txt=lost?"Esta era la solución.":(g.attempts+" intento"+(g.attempts===1?"":"s")+".");
+  if(record)txt+=" Nuevo mejor tiempo en este nivel.";
+  if(g.daily&&!lost)txt+=counts?" Racha: "+(d.streak||1)+" día"+((d.streak||1)===1?"":"s")+".":" El reto de hoy ya estaba hecho, esta partida no cambia la racha.";
+  $("rText").textContent=txt;
+  var rows=[["Tema",g.puz.t]];
+  if(g.inverse)rows.push(["Regla",g.crit[0].n]);
+  else{
+    rows.push(["Primera regla",g.crit[0].n]);
+    if(g.twist)rows.push(["Regla final",g.crit[1].n+(g.switchedAt?" (cambió en el intento "+g.switchedAt+")":" (no llegó a cambiar)")]);
+  }
+  $("rTable").innerHTML=rows.map(function(r){return "<tr><td>"+esc(r[0])+"</td><td>"+esc(r[1])+"</td></tr>"}).join("");
+  var finalOrder=g.inverse?g.crit[0].o:g.crit[g.twist?1:0].o;
+  $("rAns").innerHTML=finalOrder.map(function(w){return "<li>"+esc(w)+"</li>"}).join("");
+  var dt=new Date();
+  $("shareBox").value="Dilema del orden "+String(dt.getDate()).padStart(2,"0")+"/"+String(dt.getMonth()+1).padStart(2,"0")
+    +(g.daily?" (reto del día)":" ("+g.level+(g.inverse?", orden inverso":"")+")")+"\n"
+    +(timeout?"Se acabó el tiempo":(lost?"Me rendí a los "+fmt(secs):"Resuelto en "+fmt(secs)))+" · "+g.attempts+" intentos"
+    +(g.twist&&!lost?(g.switchedAt?" · la regla cambió en el "+g.switchedAt:" · sin giro"):"")
+    +(detective?" · detective":"");
+  $("btnShare").textContent="Copiar resultado";
+  refresh();
+}
+
+function refresh(){
+  var d=load(),s=0,key=opt.level+(opt.inverse?"-inv":"")+(opt.clock?"-reloj":"");
+  if(d.last===today()||d.last===yesterday())s=d.streak||0;
+  $("stW").textContent=d.w||0;$("stS").textContent=s;
+  var bt=d.best&&d.best[key];
+  $("stB").textContent=bt?fmt(bt):"--:--";
+}
+function syncOpts(){
+  Array.prototype.forEach.call(document.querySelectorAll("[data-lv]"),function(b){b.setAttribute("aria-pressed",String(b.getAttribute("data-lv")===opt.level))});
+  Array.prototype.forEach.call(document.querySelectorAll("[data-mode]"),function(b){b.setAttribute("aria-pressed",String((b.getAttribute("data-mode")==="inv")===opt.inverse))});
+  Array.prototype.forEach.call(document.querySelectorAll("[data-clock]"),function(b){b.setAttribute("aria-pressed",String((b.getAttribute("data-clock")==="1")===opt.clock))});
+  var L=LV[opt.level];
+  $("lvDesc").textContent=opt.inverse?"En orden inverso la regla no cambia. "+(L.thermo?"Ves el termómetro.":"No ves el termómetro."):L.d;
+  $("modeDesc").textContent=opt.inverse?"El orden correcto está casi hecho: un elemento está fuera de su sitio. Encuéntralo.":"Los 6 elementos están desordenados. Descubre la regla y ordénalos.";
+  $("clockDesc").textContent=opt.clock?"Tienes "+fmt(L.clock)+" para resolverlo. Si se acaba el tiempo, pierdes.":"El reloj cuenta hacia arriba, pero no hay límite.";
+  refresh();
+}
+function home(){
+  clearInterval(g.timer);
+  $("game").hidden=true;$("result").hidden=true;$("start").hidden=false;
+  var d=load();
+  $("btnDaily").textContent=d.dailyDone===today()?"Repetir el reto (sin racha)":"Reto del día";
+  syncOpts();
+}
+function share(){
+  var box=$("shareBox"),t=box.value;
+  function fb(){box.focus();box.select();$("btnShare").textContent="Selecciona y copia"}
+  try{
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(function(){$("btnShare").textContent="Copiado"},fb);
+    else fb();
+  }catch(e){fb()}
+}
+
+Array.prototype.forEach.call(document.querySelectorAll("[data-lv]"),function(b){b.addEventListener("click",function(){opt.level=b.getAttribute("data-lv");syncOpts()})});
+Array.prototype.forEach.call(document.querySelectorAll("[data-mode]"),function(b){b.addEventListener("click",function(){opt.inverse=b.getAttribute("data-mode")==="inv";syncOpts()})});
+Array.prototype.forEach.call(document.querySelectorAll("[data-clock]"),function(b){b.addEventListener("click",function(){opt.clock=b.getAttribute("data-clock")==="1";syncOpts()})});
+$("btnDaily").addEventListener("click",function(){begin(true)});
+$("btnFree").addEventListener("click",function(){begin(false)});
+$("btnCheck").addEventListener("click",check);
+$("btnQuit").addEventListener("click",function(){giveUp(false)});
+$("btnAgain").addEventListener("click",home);
+$("btnShare").addEventListener("click",share);
+bindList();home();
+})();
+</script>
+<script src="ayuda.js" data-juego="dilema-del-orden"></script>
+</body>
+</html>
