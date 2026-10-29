@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Números que hablan</title>
+<style>
+:root{--bg:#f4f1ea;--panel:#fffdf8;--ink:#22201c;--mute:#756f64;--line:#d9d2c3;--accent:#22201c;--ok:#2f7d4a;--bad:#b3392f;--hi:#efe3bd}
+@media (prefers-color-scheme:dark){:root{--bg:#151412;--panel:#201e1b;--ink:#efebe2;--mute:#9a9486;--line:#38342d;--accent:#efebe2;--ok:#6cc58a;--bad:#ee7b70;--hi:#3b3322}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 Georgia,serif;display:flex;justify-content:center}
+main{width:100%;max-width:560px;padding:18px 16px 48px}
+a.back{color:var(--mute);text-decoration:none;font-size:.9rem}
+h1{font-size:1.8rem;margin:8px 0 4px;letter-spacing:-.01em}
+.sub{color:var(--mute);margin:0 0 14px}
+button,select,input[type=number]{font:inherit;color:var(--ink);background:var(--panel);border:1.5px solid var(--line);border-radius:10px;padding:8px 12px}
+button{cursor:pointer}
+button:hover:not(:disabled){border-color:var(--accent)}
+button:disabled{opacity:.45;cursor:default}
+button.main{background:var(--accent);color:var(--panel);border-color:var(--accent)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.opts{display:grid;gap:10px;background:var(--panel);border:1.5px solid var(--line);border-radius:14px;padding:12px;margin-bottom:12px}
+.row{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}
+.row>b{font-weight:normal;color:var(--mute);font-size:.85rem;min-width:52px}
+label{display:inline-flex;gap:5px;align-items:center;cursor:pointer}
+.hud{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:.95rem;margin:4px 2px 6px;font-variant-numeric:tabular-nums}
+.tbar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-bottom:10px}
+.tbar i{display:block;height:100%;width:100%;background:var(--accent);transition:width .1s linear}
+.card{background:var(--panel);border:1.5px solid var(--line);border-radius:14px;padding:14px}
+.note{color:var(--mute);font-size:.9rem;margin:0 0 10px}
+ol.eqs{list-style:none;margin:0 0 14px;padding:0;display:grid;gap:8px}
+.eqs li{font-size:1.45rem;font-variant-numeric:tabular-nums;padding:6px 4px;border-bottom:1px dashed var(--line)}
+.eqs li:last-child{border-bottom:0}
+.eqs button.eqb{width:100%;text-align:left;font-size:1.45rem;font-variant-numeric:tabular-nums}
+.eqs button.bad{border-color:var(--bad);color:var(--bad)}
+.eqs button.wrong{border-style:dashed;opacity:.7}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+.chip{display:flex;flex-direction:column;align-items:center;min-width:64px;padding:6px 10px}
+.chip .sy{font-size:1.7rem;line-height:1.2}
+.chip .va{font-size:1.1rem;font-variant-numeric:tabular-nums;color:var(--mute)}
+.chip.on{border-color:var(--accent);background:var(--hi)}
+.chip.on .va{color:var(--ink)}
+.pad{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:12px}
+.pad button{font-size:1.2rem;padding:10px 0;font-variant-numeric:tabular-nums}
+.build{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px;font-size:1.3rem}
+.build select{font-size:1.3rem;padding:6px 8px}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.acts button{flex:1 1 140px}
+#msg{min-height:1.4em;margin:12px 2px 6px}
+#sol{margin-top:10px;padding:10px 12px;border:1.5px dashed var(--line);border-radius:12px;font-size:.95rem}
+#sol p{margin:0 0 4px;font-variant-numeric:tabular-nums}
+#fin{margin-top:12px;text-align:center}
+#fin h2{margin:0 0 6px}
+#fin pre{font:inherit;margin:8px 0;white-space:pre-wrap}
+.mute{color:var(--mute);font-size:.85rem}
+</style>
+</head>
+<body>
+<main>
+<a class="back" href="index.html">← Juegos de lógica</a>
+<h1>Números que hablan</h1>
+<p class="sub">Cada símbolo esconde un dígito. Descubre cuál.</p>
+
+<section class="opts" aria-label="Opciones de partida">
+  <div class="row"><b>Nivel</b>
+    <label><input type="radio" name="lvl" value="1"> Fácil</label>
+    <label><input type="radio" name="lvl" value="2" checked> Medio</label>
+    <label><input type="radio" name="lvl" value="3"> Difícil</label>
+  </div>
+  <div class="row"><b>Modo</b>
+    <label><input type="radio" name="modo" value="dec" checked> Descifrar</label>
+    <label><input type="radio" name="modo" value="inv"> Código inverso</label>
+    <label><input type="checkbox" id="ct"> Contrarreloj (20 s)</label>
+  </div>
+  <div class="acts"><button type="button" class="main" id="nueva">Nueva partida</button><button type="button" id="diario">Reto del día</button></div>
+</section>
+
+<div id="juego">
+  <div class="hud"><span id="vidas" aria-label="Vidas"></span><span id="ronda"></span><span id="pts"></span><span id="tleft"></span></div>
+  <div class="tbar" id="tbar" hidden><i id="tfill"></i></div>
+  <section class="card" id="tablero"></section>
+  <div id="sol" hidden></div>
+  <p id="msg" role="status" aria-live="polite"></p>
+  <div class="acts"><button type="button" class="main" id="principal">Comprobar</button><button type="button" class="main" id="sig" hidden>Siguiente</button></div>
+</div>
+
+<section class="card" id="fin" hidden>
+  <h2 id="fin-t"></h2>
+  <p id="fin-p"></p>
+  <pre id="fin-h"></pre>
+  <div class="acts"><button type="button" class="main" id="otra">Jugar otra vez</button><button type="button" id="comp" hidden>Compartir resultado</button></div>
+  <p class="mute" id="comp-m" role="status"></p>
+</section>
+
+<p class="mute" id="rec"></p>
+</main>
+
+<script>
+(function(){
+"use strict";
+/*LOGIC*/
+var OPS={"+":function(a,b){return a+b},"−":function(a,b){return a-b},"×":function(a,b){return a*b}};
+function mulberry(seed){var t=seed>>>0;return function(){t+=0x6D2B79F5;var r=Math.imul(t^t>>>15,1|t);r^=r+Math.imul(r^r>>>7,61|r);return((r^r>>>14)>>>0)/4294967296}}
+function seedOf(str){var h=2166136261;for(var i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+function pick(r,a){return a[Math.floor(r()*a.length)]}
+function shuffle(r,a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(r()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
+function tv(t,as){return t.s!==undefined?as[t.s]:t.n}
+function symIdx(t){return t.s===undefined?-1:t.s}
+function holds(e,as){return OPS[e.op](tv(e.a,as),tv(e.b,as))===tv(e.c,as)}
+function mk(a,op,b,c){return{a:a,op:op,b:b,c:c}}
+function eqKey(e){return JSON.stringify(e)}
+function solve(eqs,k,distinct,limit){
+  var by=[],i,out=[],as=new Array(k);
+  for(i=0;i<k;i++)by.push([]);
+  eqs.forEach(function(e){var m=Math.max(symIdx(e.a),symIdx(e.b),symIdx(e.c));if(m>=0)by[m].push(e)});
+  (function rec(i,used){
+    if(out.length>=limit)return;
+    if(i===k){out.push(as.slice());return}
+    for(var d=0;d<10;d++){
+      if(distinct&&(used>>d&1))continue;
+      as[i]=d;
+      var ok=true;
+      for(var j=0;j<by[i].length;j++)if(!holds(by[i][j],as)){ok=false;break}
+      if(ok)rec(i+1,used|1<<d);
+    }
+  })(0,0);
+  return out;
+}
+function randEq(r,as,k,ops,big){
+  var op=pick(r,ops);
+  var a=r()<.85?{s:Math.floor(r()*k)}:{n:1+Math.floor(r()*9)};
+  var b=r()<.8?{s:Math.floor(r()*k)}:{n:1+Math.floor(r()*9)};
+  if(a.s===undefined&&b.s===undefined)return null;
+  var v=OPS[op](tv(a,as),tv(b,as));
+  if(v<0||v>(big?99:30))return null;
+  var cs=[];for(var i=0;i<k;i++)if(as[i]===v)cs.push(i);
+  var c=cs.length&&r()<.65?{s:pick(r,cs)}:{n:v};
+  return mk(a,op,b,c);
+}
+function newEq(r,as,k,ops,big,keys){
+  for(var z=0;z<25;z++){var e=randEq(r,as,k,ops,big);if(e&&!keys[eqKey(e)]){keys[eqKey(e)]=1;return e}}
+  return null;
+}
+var FALL={kind:"dec",k:2,as:[3,6],eqs:[mk({s:0},"+",{s:0},{s:1}),mk({s:1},"+",{s:0},{n:9})],gem:false};
+function genRound(lvl,r){
+  var k=lvl+1,neq=lvl===1?2:lvl===2?3:4;
+  var ops=lvl===1?["+","−"]:["+","−","×"];
+  var gem=lvl===3&&r()<.5;
+  for(var t=0;t<3000;t++){
+    var as=[],i;
+    for(i=0;i<k;i++){var d;do{d=Math.floor(r()*10)}while(!gem&&as.indexOf(d)>=0);as.push(d)}
+    if(gem&&new Set(as).size===k)continue;
+    var eqs=[],keys={},bad=false;
+    for(var q=0;q<neq&&!bad;q++){var e=newEq(r,as,k,ops,lvl===3,keys);if(!e)bad=true;else eqs.push(e)}
+    if(bad)continue;
+    var used=0;
+    eqs.forEach(function(e){[e.a,e.b,e.c].forEach(function(x){if(x.s!==undefined)used|=1<<x.s})});
+    if(used!==(1<<k)-1)continue;
+    if(solve(eqs,k,!gem,2).length===1)return{kind:"dec",k:k,as:as,eqs:eqs,gem:gem};
+  }
+  return FALL;
+}
+function genTrap(r){
+  var ops=["+","−","×"];
+  for(var t=0;t<6000;t++){
+    var as=[];while(as.length<3){var d=Math.floor(r()*10);if(as.indexOf(d)<0)as.push(d)}
+    var eqs=[],keys={},ok=true;
+    for(var q=0;q<3&&ok;q++){var e=newEq(r,as,3,ops,true,keys);if(!e)ok=false;else eqs.push(e)}
+    if(!ok)continue;
+    var f=randEq(r,as,3,ops,true);if(!f)continue;
+    var v=OPS[f.op](tv(f.a,as),tv(f.b,as));
+    var w=v+(r()<.5?-1:1)*(1+Math.floor(r()*3));
+    if(w<0)continue;
+    f.c={n:w};
+    if(keys[eqKey(f)])continue;
+    var bad=Math.floor(r()*4),list=eqs.slice();list.splice(bad,0,f);
+    var used=0;
+    list.forEach(function(e){[e.a,e.b,e.c].forEach(function(x){if(x.s!==undefined)used|=1<<x.s})});
+    if(used!==7)continue;
+    var cons=[];
+    for(var i=0;i<4;i++){if(solve(list.filter(function(_,j){return j!==i}),3,true,1).length)cons.push(i)}
+    if(cons.length===1&&cons[0]===bad)return{kind:"trap",k:3,as:as,eqs:list,bad:bad};
+  }
+  return null;
+}
+function genInv(lvl,r){
+  var k=lvl+1,as=[];
+  while(as.length<k){var d=Math.floor(r()*10);if(as.indexOf(d)<0)as.push(d)}
+  return{kind:"inv",k:k,as:as};
+}
+function checkInv(e,as){
+  var u={};[e.a,e.b,e.c].forEach(function(x){if(x.s!==undefined)u[x.s]=1});
+  if(Object.keys(u).length<2)return"pocos";
+  return holds(e,as)?"ok":"mal";
+}
+/*END*/
+
+var POOL=["🍎","🍌","🍇","🍒","🍋","🍉","🥝","🍑","🍓","🥥"];
+var KEY="numeros-hablan-lg";
+var $=function(i){return document.getElementById(i)};
+function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!==undefined)e.textContent=x;return e}
+function load(){try{return JSON.parse(localStorage.getItem(KEY)||"null")||{}}catch(e){return{}}}
+function save(s){try{localStorage.setItem(KEY,JSON.stringify(s))}catch(e){}}
+function dstr(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function hoy(){return dstr(new Date())}
+function ayer(){var d=new Date();d.setDate(d.getDate()-1);return dstr(d)}
+function txt(e,syms){function t(x){return x.s!==undefined?syms[x.s]:String(x.n)}return t(e.a)+" "+e.op+" "+t(e.b)+" = "+t(e.c)}
+function num(e,as){return tv(e.a,as)+" "+e.op+" "+tv(e.b,as)+" = "+tv(e.c,as)}
+
+var G={lvl:2,inv:false,ct:false,daily:false,rand:Math.random,rounds:8,i:0,lives:3,pts:0,run:0,err:0,badge:false,hist:[],cur:null,sel:0,guess:[],done:false,t0:0,tmax:20,tid:0};
+
+function hud(){
+  $("vidas").textContent="❤️".repeat(Math.max(0,G.lives))+"🖤".repeat(Math.max(0,3-G.lives));
+  $("ronda").textContent="Código "+Math.min(G.i,G.rounds)+"/"+G.rounds;
+  $("pts").textContent=G.pts+" pts"+(G.run>1?" · racha "+G.run:"");
+}
+function stopTimer(){if(G.tid){clearInterval(G.tid);G.tid=0}$("tbar").hidden=true;$("tleft").textContent=""}
+function tick(){
+  var left=G.tmax-(performance.now()-G.t0)/1000;
+  $("tfill").style.width=Math.max(0,left/G.tmax*100)+"%";
+  $("tleft").textContent=Math.max(0,Math.ceil(left))+" s";
+  if(left<=0&&!G.done)resolve(false,"Se acabó el tiempo.");
+}
+function startTimer(){
+  stopTimer();
+  if(!G.ct)return;
+  G.tmax=G.inv?25:20;G.t0=performance.now();
+  $("tbar").hidden=false;G.tid=setInterval(tick,100);tick();
+}
+
+function make(){
+  var c;
+  if(G.inv)c=genInv(G.lvl,G.rand);
+  else if(G.lvl===3&&G.i%3===0)c=genTrap(G.rand)||genRound(G.lvl,G.rand);
+  else c=genRound(G.lvl,G.rand);
+  c.syms=shuffle(G.rand,POOL).slice(0,c.k);
+  return c;
+}
+
+function startGame(daily){
+  stopTimer();
+  G.daily=!!daily;
+  G.lvl=daily?2:+document.querySelector("input[name=lvl]:checked").value;
+  G.inv=daily?false:document.querySelector("input[name=modo]:checked").value==="inv";
+  G.ct=daily?false:$("ct").checked;
+  G.rand=daily?mulberry(seedOf(hoy()+"-nqh")):Math.random;
+  G.i=0;G.lives=3;G.pts=0;G.run=0;G.err=0;G.badge=false;G.hist=[];
+  $("fin").hidden=true;$("juego").hidden=false;
+  next();
+}
+
+function next(){
+  if(G.lives<=0){finish(false);return}
+  if(G.i>=G.rounds){finish(true);return}
+  G.i++;G.done=false;G.cur=make();
+  G.guess=[];for(var i=0;i<G.cur.k;i++)G.guess.push(null);
+  G.sel=0;
+  $("msg").textContent="";$("sol").hidden=true;$("sig").hidden=true;
+  render();startTimer();
+}
+
+function render(){
+  var c=G.cur,b=$("tablero"),pr=$("principal");
+  b.textContent="";hud();pr.hidden=false;pr.disabled=false;
+  var i;
+  if(c.kind==="trap"){
+    b.appendChild(el("p","note","Símbolos traicioneros: cada símbolo vale lo mismo en todas las ecuaciones, pero una de ellas no puede cumplirse a la vez que las demás. Toca la que no encaja."));
+    var ol=el("ol","eqs");
+    c.eqs.forEach(function(e,i){
+      var li=el("li"),bt=el("button","eqb",txt(e,c.syms));
+      bt.type="button";bt.dataset.i=i;bt.onclick=function(){pickTrap(i)};
+      li.appendChild(bt);ol.appendChild(li);
+    });
+    b.appendChild(ol);pr.hidden=true;
+  }else if(c.kind==="dec"){
+    b.appendChild(el("p","note",c.gem?"⚠ Gemelos: dos símbolos pueden valer lo mismo.":"Cada símbolo es un dígito distinto, del 0 al 9."));
+    var ol2=el("ol","eqs");
+    c.eqs.forEach(function(e){ol2.appendChild(el("li","",txt(e,c.syms)))});
+    b.appendChild(ol2);
+    var chips=el("div","chips");
+    c.syms.forEach(function(s,i){
+      var bt=el("button","chip");bt.type="button";bt.dataset.i=i;
+      bt.setAttribute("aria-label","Símbolo "+s);
+      bt.appendChild(el("span","sy",s));bt.appendChild(el("span","va","?"));
+      bt.onclick=function(){if(G.done)return;G.sel=i;paint()};
+      chips.appendChild(bt);
+    });
+    b.appendChild(chips);
+    var pad=el("div","pad");
+    for(i=0;i<10;i++){(function(d){var bt=el("button","",String(d));bt.type="button";bt.onclick=function(){assign(d)};pad.appendChild(bt)})(i)}
+    var cl=el("button","","⌫");cl.type="button";cl.setAttribute("aria-label","Borrar");
+    cl.onclick=function(){if(G.done)return;G.guess[G.sel]=null;paint()};
+    pad.appendChild(cl);
+    b.appendChild(pad);
+    pr.textContent="Comprobar";
+    paint();
+  }else{
+    b.appendChild(el("p","note","Estos son los valores. Construye una ecuación verdadera que use al menos dos símbolos distintos."));
+    var chips2=el("div","chips");
+    c.syms.forEach(function(s,i){
+      var d=el("div","chip");d.appendChild(el("span","sy",s));d.appendChild(el("span","va","= "+c.as[i]));chips2.appendChild(d);
+    });
+    b.appendChild(chips2);
+    var bl=el("div","build");
+    var symOpts=c.syms.map(function(s,i){return["s"+i,s]});
+    var resOpts=symOpts.slice();
+    for(i=0;i<=81;i++)resOpts.push(["n"+i,String(i)]);
+    bl.appendChild(mkSel("ia",symOpts,"Primer término"));
+    bl.appendChild(mkSel("io",[["+","+"],["−","−"],["×","×"]],"Operación"));
+    bl.appendChild(mkSel("ib",symOpts,"Segundo término"));
+    bl.appendChild(document.createTextNode("="));
+    bl.appendChild(mkSel("ic",resOpts,"Resultado"));
+    b.appendChild(bl);
+    pr.textContent="Comprobar";
+  }
+}
+function mkSel(id,opts,label){
+  var s=document.createElement("select");s.id=id;s.setAttribute("aria-label",label);
+  opts.forEach(function(o){var op=document.createElement("option");op.value=o[0];op.textContent=o[1];s.appendChild(op)});
+  return s;
+}
+function paint(){
+  var chips=document.querySelectorAll(".chip");
+  chips.forEach(function(ch,i){
+    ch.classList.toggle("on",i===G.sel&&!G.done);
+    var v=ch.querySelector(".va");if(v&&G.cur.kind==="dec")v.textContent=G.guess[i]===null?"?":String(G.guess[i]);
+  });
+  $("principal").disabled=G.guess.some(function(x){return x===null});
+}
+function assign(d){
+  if(G.done||!G.cur||G.cur.kind!=="dec")return;
+  G.guess[G.sel]=d;
+  for(var o=1;o<=G.cur.k;o++){var j=(G.sel+o)%G.cur.k;if(G.guess[j]===null){G.sel=j;break}}
+  paint();
+}
+function parseSel(v){return v.charAt(0)==="s"?{s:+v.slice(1)}:{n:+v.slice(1)}}
+
+function principal(){
+  if(G.done||!G.cur)return;
+  var c=G.cur;
+  if(c.kind==="dec"){
+    var as=G.guess,ok=c.eqs.every(function(e){return holds(e,as)});
+    if(ok&&!c.gem&&new Set(as).size!==as.length)ok=false;
+    resolve(ok,"Esos valores no cumplen todas las ecuaciones.");
+  }else if(c.kind==="inv"){
+    var e=mk(parseSel($("ia").value),$("io").value,parseSel($("ib").value),parseSel($("ic").value));
+    var res=checkInv(e,c.as);
+    if(res==="pocos"){$("msg").textContent="Usa al menos dos símbolos distintos.";return}
+    c.mine=txt(e,c.syms);
+    resolve(res==="ok","Esa ecuación no se cumple con esos valores.");
+  }
+}
+function pickTrap(i){
+  if(G.done)return;
+  G.pick=i;
+  resolve(i===G.cur.bad,"No era esa.");
+}
+
+function resolve(ok,why){
+  if(G.done)return;
+  G.done=true;
+  var left=G.ct?Math.max(0,G.tmax-(performance.now()-G.t0)/1000):0;
+  stopTimer();
+  G.hist.push(ok?"🟩":"🟥");
+  var msg;
+  if(ok){
+    var g=10*G.lvl+Math.ceil(left);G.pts+=g;G.run++;
+    msg="¡Descifrado! +"+g;
+    if(G.run===5){G.badge=true;msg+=" 🏅 Insignia «Descifrador»: 5 seguidos."}
+  }else{G.lives--;G.err++;G.run=0;msg=(why||"No es esa solución.")+" Así era:"}
+  reveal(ok);
+  $("msg").textContent=msg;
+  $("principal").hidden=true;
+  var sg=$("sig");sg.hidden=false;
+  sg.textContent=(G.lives<=0||G.i>=G.rounds)?"Ver resultado":"Siguiente";
+  sg.focus();
+  hud();
+}
+function reveal(ok){
+  var c=G.cur,s=$("sol");s.hidden=false;s.textContent="";
+  function line(t){s.appendChild(el("p","",t))}
+  var vals=c.syms.map(function(y,i){return y+" = "+c.as[i]}).join(" · ");
+  if(c.kind==="trap"){
+    var be=c.eqs[c.bad],lv=OPS[be.op](tv(be.a,c.as),tv(be.b,c.as));
+    document.querySelectorAll(".eqb").forEach(function(b,i){b.disabled=true;b.style.opacity=1;if(i===c.bad)b.classList.add("bad");else if(i===G.pick)b.classList.add("wrong")});
+    line(vals);
+    line("Las otras tres se cumplen con esos valores. En «"+txt(be,c.syms)+"» el resultado debería ser "+lv+".");
+  }else if(c.kind==="dec"){
+    line(vals);
+    c.eqs.forEach(function(e){line(txt(e,c.syms)+"  →  "+num(e,c.as))});
+    document.querySelectorAll(".chip").forEach(function(ch,i){ch.classList.remove("on");ch.querySelector(".va").textContent=String(G.guess[i]===null?"?":G.guess[i])});
+  }else{
+    if(ok)line("Tu ecuación: "+c.mine+"  →  "+num(parseMine(c),c.as));
+    else line("Por ejemplo: "+c.syms[0]+" + "+c.syms[1]+" = "+(c.as[0]+c.as[1]));
+    ["ia","io","ib","ic"].forEach(function(id){$(id).disabled=true});
+  }
+}
+function parseMine(c){return mk(parseSel($("ia").value),$("io").value,parseSel($("ib").value),parseSel($("ic").value))}
+
+function finish(win){
+  stopTimer();
+  var st=load();
+  $("juego").hidden=true;$("fin").hidden=false;
+  $("fin-t").textContent=win?"¡Descifrado!":"Sin vidas";
+  $("fin-p").textContent=(G.hist.length-G.err)+" de "+G.hist.length+" códigos bien · "+G.pts+" puntos"+(G.badge?" · 🏅 Descifrador":"");
+  $("fin-h").textContent=G.hist.join("");
+  if(win){
+    st.w=(st.w||0)+1;
+    if(G.pts>(st.rec||0))st.rec=G.pts;
+  }
+  if(G.badge)st.insig=(st.insig||0)+1;
+  if(G.daily&&win&&G.err===0&&st.dia!==hoy()){
+    st.rd=st.dia===ayer()?(st.rd||0)+1:1;st.dia=hoy();
+    $("fin-p").textContent+=" · racha diaria: "+st.rd;
+  }
+  save(st);stats();
+  var cb=$("comp");cb.hidden=!G.daily;
+  $("comp-m").textContent="";
+}
+function stats(){
+  var st=load();
+  $("rec").textContent="Ganadas: "+(st.w||0)+" · Mejor puntuación: "+(st.rec||0)+(st.insig?" · Insignias: "+st.insig:"")+(st.rd?" · Racha diaria: "+st.rd:"");
+}
+function compartir(){
+  var t="Números que hablan · reto del día "+hoy()+"\n"+G.hist.join("")+"\n"+G.pts+" puntos";
+  var m=$("comp-m");
+  try{navigator.clipboard.writeText(t).then(function(){m.textContent="Copiado. Pégalo donde quieras."},function(){m.textContent=t})}
+  catch(e){m.textContent=t}
+}
+
+$("nueva").onclick=function(){startGame(false)};
+$("diario").onclick=function(){startGame(true)};
+$("otra").onclick=function(){startGame(false)};
+$("comp").onclick=compartir;
+$("principal").onclick=principal;
+$("sig").onclick=next;
+document.addEventListener("keydown",function(e){
+  var t=e.target&&e.target.tagName;
+  if(t==="SELECT"||t==="INPUT"||t==="TEXTAREA")return;
+  if(document.querySelector("dialog[open]")||!G.cur)return;
+  if(!G.done&&G.cur.kind==="dec"&&/^[0-9]$/.test(e.key)){assign(+e.key);return}
+  if(e.key==="Enter"&&t!=="BUTTON"){
+    if(G.done&&!$("sig").hidden)$("sig").click();
+    else if(!G.done&&!$("principal").hidden&&!$("principal").disabled)$("principal").click();
+  }
+});
+stats();
+startGame(false);
+})();
+</script>
+<script src="ayuda.js" data-juego="numeros-que-hablan"></script>
+</body>
+</html>

@@ -154,6 +154,35 @@
       ],
       ejemplo: "Con Perro, Saturno, Cebolla, Marte, Gato y Júpiter, una regla posible es «animales, luego planetas, luego verduras, y alfabético dentro de cada grupo»: Gato, Perro, Júpiter, Marte, Saturno, Cebolla. Otra sería el orden alfabético simple. El marcador te dirá cuál se acerca más.",
       niveles: "Fácil: la regla no cambia. Medio: la regla cambia cuando aciertas 3. Difícil: igual que medio, pero sin «más cerca / más lejos» ni termómetro, solo el número de aciertos. Con contrarreloj tienes 4 minutos (fácil), 3 (medio) o 2 (difícil), y si se acaban pierdes. El reto del día es siempre de nivel medio y sin límite de tiempo."
+    },
+    "numeros-que-hablan": {
+      titulo: "Números que hablan",
+      objetivo: "Descubrir qué dígito esconde cada símbolo para que todas las ecuaciones sean correctas.",
+      pasos: [
+        "Cada símbolo (🍎, 🍌…) es un dígito del 0 al 9. Las ecuaciones pueden sumar, restar o multiplicar, y mezclan símbolos con números normales.",
+        "Toca un símbolo de la lista y después un dígito del teclado (también sirve el teclado del ordenador). Al poner un dígito, se pasa solo al siguiente símbolo sin valor.",
+        "Cuando todos tengan valor, pulsa «Comprobar». Solo existe una solución posible.",
+        "Normalmente cada símbolo es un dígito distinto. En los códigos marcados con ⚠ <b>Gemelos</b>, dos símbolos pueden valer lo mismo.",
+        "En difícil aparecen los <b>símbolos traicioneros</b>: te dan cuatro ecuaciones y una de ellas no puede cumplirse con los mismos valores que las otras tres. Toca esa ecuación.",
+        "Son 8 códigos y 3 vidas. Si fallas, o se acaba el tiempo, se muestra la solución con las cuentas hechas. Cada acierto da 10 puntos por nivel más los segundos que sobren, y 5 aciertos seguidos dan la insignia 🏅 Descifrador.",
+        "En el modo <b>Código inverso</b> te dan los valores de los símbolos y tú construyes una ecuación verdadera, con al menos dos símbolos distintos, eligiendo las piezas en los desplegables."
+      ],
+      ejemplo: "Con 🍎 + 🍎 = 🍌 y 🍌 + 🍎 = 9: si 🍎 vale 3, entonces 🍌 vale 6, y 6 + 3 = 9 cuadra. Empieza siempre por la ecuación con menos símbolos desconocidos y ve despejando el resto.",
+      niveles: "Fácil: 2 símbolos, solo sumas y restas. Medio: 3 símbolos, con multiplicaciones. Difícil: 4 símbolos, resultados de hasta 99, algunos códigos con gemelos y los códigos 3 y 6 con símbolos traicioneros. Contrarreloj: 20 segundos por código (25 en el código inverso). El reto del día es de nivel medio y sin tiempo, y tu racha sube un día cada vez que lo completas sin ningún error."
+    },
+    "cadena-rota": {
+      titulo: "Cadena rota",
+      objetivo: "Encontrar el número que rompe el patrón de una secuencia.",
+      pasos: [
+        "Mira cómo cambian los números: saltos fijos, multiplicaciones, saltos que van creciendo, series mezcladas, cuadrados, primos, Fibonacci, o una propiedad de las cifras (todos terminan en 6, sus cifras suman 9…).",
+        "Toca el número que no encaja. La respuesta se comprueba al instante.",
+        "En difícil hay secuencias con <b>dos intrusos intercalados</b>: son dos series mezcladas, una en las posiciones impares y otra en las pares, con un intruso en cada una. Toca los dos. Si te equivocas antes del segundo, vuelve a tocar el primero para soltarlo.",
+        "Si fallas, se muestran el patrón, el número que debía estar y la secuencia correcta, y pierdes una vida. Son 8 cadenas y 3 vidas.",
+        "Cada acierto da 10 puntos por nivel más los segundos que sobren en contrarreloj. 5 aciertos seguidos dan la insignia 🏅 Cazador de patrones.",
+        "En el modo <b>Patrón inverso</b> te dan la secuencia correcta, tocas un número y escribes el intruso que lo sustituya. Vale si queda un único intruso claro. Si tu número se parece mucho al original, ganas 10 puntos extra por sutil."
+      ],
+      ejemplo: "2 · 4 · 6 · 9 · 10 · 12 · 14: todos van de 2 en 2, así que sobra el 9 (debería ser 8).",
+      niveles: "Fácil: 6 o 7 números con sumas, multiplicaciones y múltiplos. Medio: 7 u 8 números, con saltos crecientes, cuadrados, primos, Fibonacci, series mezcladas y propiedades de las cifras. Difícil: 8 números, con cubos y patrones más raros, y tres de las ocho cadenas tienen dos intrusos. Contrarreloj: 12 segundos por cadena (25 si hay dos intrusos o en patrón inverso), y tras varios aciertos seguidos el tiempo baja hasta 3 segundos. El reto del día es de nivel medio y sin tiempo, y tu racha sube un día cada vez que lo completas sin ningún error."
     }
   };
 

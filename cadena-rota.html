@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cadena rota</title>
+<style>
+:root{--bg:#f4f1ea;--panel:#fffdf8;--ink:#22201c;--mute:#756f64;--line:#d9d2c3;--accent:#22201c;--ok:#2f7d4a;--bad:#b3392f;--hi:#efe3bd}
+@media (prefers-color-scheme:dark){:root{--bg:#151412;--panel:#201e1b;--ink:#efebe2;--mute:#9a9486;--line:#38342d;--accent:#efebe2;--ok:#6cc58a;--bad:#ee7b70;--hi:#3b3322}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 Georgia,serif;display:flex;justify-content:center}
+main{width:100%;max-width:560px;padding:18px 16px 48px}
+a.back{color:var(--mute);text-decoration:none;font-size:.9rem}
+h1{font-size:1.8rem;margin:8px 0 4px;letter-spacing:-.01em}
+.sub{color:var(--mute);margin:0 0 14px}
+button,select,input[type=number]{font:inherit;color:var(--ink);background:var(--panel);border:1.5px solid var(--line);border-radius:10px;padding:8px 12px}
+button{cursor:pointer}
+button:hover:not(:disabled){border-color:var(--accent)}
+button:disabled{opacity:.45;cursor:default}
+button.main{background:var(--accent);color:var(--panel);border-color:var(--accent)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.opts{display:grid;gap:10px;background:var(--panel);border:1.5px solid var(--line);border-radius:14px;padding:12px;margin-bottom:12px}
+.row{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}
+.row>b{font-weight:normal;color:var(--mute);font-size:.85rem;min-width:52px}
+label{display:inline-flex;gap:5px;align-items:center;cursor:pointer}
+.hud{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:.95rem;margin:4px 2px 6px;font-variant-numeric:tabular-nums}
+.tbar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-bottom:10px}
+.tbar i{display:block;height:100%;width:100%;background:var(--accent);transition:width .1s linear}
+.card{background:var(--panel);border:1.5px solid var(--line);border-radius:14px;padding:14px}
+.note{color:var(--mute);font-size:.9rem;margin:0 0 12px}
+.nums{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:4px 0 10px}
+.nums button{min-width:58px;min-height:58px;font-size:1.4rem;font-variant-numeric:tabular-nums;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px 10px}
+.nums button small{font-size:.68rem;color:var(--mute);line-height:1.1;margin-top:2px}
+.nums button.sel{border-color:var(--accent);background:var(--hi)}
+.nums button.bad{border-color:var(--bad);color:var(--bad)}
+.nums button.wrong{border-style:dashed;opacity:.7}
+.nums button.mine{border-color:var(--ok);color:var(--ok)}
+.build{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;margin:6px 0 4px}
+.build input{width:7.5em;font-size:1.3rem;text-align:center;font-variant-numeric:tabular-nums}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.acts button{flex:1 1 140px}
+#msg{min-height:1.4em;margin:12px 2px 6px}
+#sol{margin-top:10px;padding:10px 12px;border:1.5px dashed var(--line);border-radius:12px;font-size:.95rem}
+#sol p{margin:0 0 4px;font-variant-numeric:tabular-nums}
+#fin{margin-top:12px;text-align:center}
+#fin h2{margin:0 0 6px}
+#fin pre{font:inherit;margin:8px 0;white-space:pre-wrap}
+.mute{color:var(--mute);font-size:.85rem}
+</style>
+</head>
+<body>
+<main>
+<a class="back" href="index.html">← Juegos de lógica</a>
+<h1>Cadena rota</h1>
+<p class="sub">Una secuencia sigue un patrón. Un número no encaja. Encuéntralo.</p>
+
+<section class="opts" aria-label="Opciones de partida">
+  <div class="row"><b>Nivel</b>
+    <label><input type="radio" name="lvl" value="1"> Fácil</label>
+    <label><input type="radio" name="lvl" value="2" checked> Medio</label>
+    <label><input type="radio" name="lvl" value="3"> Difícil</label>
+  </div>
+  <div class="row"><b>Modo</b>
+    <label><input type="radio" name="modo" value="cazar" checked> Cazar intruso</label>
+    <label><input type="radio" name="modo" value="inv"> Patrón inverso</label>
+    <label><input type="checkbox" id="ct"> Contrarreloj (12 s)</label>
+  </div>
+  <div class="acts"><button type="button" class="main" id="nueva">Nueva partida</button><button type="button" id="diario">Reto del día</button></div>
+</section>
+
+<div id="juego">
+  <div class="hud"><span id="vidas" aria-label="Vidas"></span><span id="ronda"></span><span id="pts"></span><span id="tleft"></span></div>
+  <div class="tbar" id="tbar" hidden><i id="tfill"></i></div>
+  <section class="card" id="tablero"></section>
+  <div id="sol" hidden></div>
+  <p id="msg" role="status" aria-live="polite"></p>
+  <div class="acts"><button type="button" class="main" id="principal" hidden>Comprobar</button><button type="button" class="main" id="sig" hidden>Siguiente</button></div>
+</div>
+
+<section class="card" id="fin" hidden>
+  <h2 id="fin-t"></h2>
+  <p id="fin-p"></p>
+  <pre id="fin-h"></pre>
+  <div class="acts"><button type="button" class="main" id="otra">Jugar otra vez</button><button type="button" id="comp" hidden>Compartir resultado</button></div>
+  <p class="mute" id="comp-m" role="status"></p>
+</section>
+
+<p class="mute" id="rec"></p>
+</main>
+
+<script>
+(function(){
+"use strict";
+/*LOGIC*/
+function mulberry(seed){var t=seed>>>0;return function(){t+=0x6D2B79F5;var r=Math.imul(t^t>>>15,1|t);r^=r+Math.imul(r^r>>>7,61|r);return((r^r>>>14)>>>0)/4294967296}}
+function seedOf(str){var h=2166136261;for(var i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+function pick(r,a){return a[Math.floor(r()*a.length)]}
+function ri(r,a,b){return a+Math.floor(r()*(b-a+1))}
+function shuffle(r,a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(r()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
+function isPrime(n){if(n<2)return false;for(var i=2;i*i<=n;i++)if(n%i===0)return false;return true}
+function isSq(n){var s=Math.round(Math.sqrt(n));return s*s===n}
+function isCube(n){var s=Math.round(Math.cbrt(n));return s*s*s===n}
+function isTri(n){if(n<1)return false;var k=Math.round((Math.sqrt(8*n+1)-1)/2);return k*(k+1)/2===n}
+function isPow2(n){return n>0&&(n&(n-1))===0}
+var FIBS={1:1,2:1,3:1,5:1,8:1,13:1,21:1,34:1,55:1,89:1,144:1,233:1,377:1,610:1};
+function ds(n){var s=0,t=String(n);for(var i=0;i<t.length;i++)s+=+t.charAt(i);return s}
+
+/* Propiedades que puede cumplir cada número por separado */
+var PRED=[],q;
+PRED.push({id:"odd",f:function(n){return n%2===1}});
+for(q=2;q<=12;q++)(function(m){PRED.push({id:"m"+m,f:function(n){return n%m===0}})})(q);
+PRED.push({id:"pr",f:isPrime},{id:"sq",f:isSq},{id:"cu",f:isCube},{id:"tr",f:isTri},{id:"p2",f:isPow2},{id:"fi",f:function(n){return FIBS[n]===1}});
+for(q=2;q<=20;q++)(function(S){PRED.push({id:"s"+S,f:function(n){return ds(n)===S}})})(q);
+for(q=0;q<=9;q++)(function(d){PRED.push({id:"e"+d,f:function(n){return n%10===d}},{id:"h"+d,f:function(n){return String(n).indexOf(String(d))>=0}})})(q);
+
+/* Ajustes de patrón. p = lista de [posición, valor] sin el número descartado */
+function polyFit(p,deg){
+  if(p.length<deg+2)return false;
+  var base=p.slice(0,deg+1),a,b,x,sum,term;
+  for(var k=deg+1;k<p.length;k++){
+    x=p[k][0];sum=0;
+    for(a=0;a<base.length;a++){term=base[a][1];for(b=0;b<base.length;b++)if(b!==a)term*=(x-base[b][0])/(base[a][0]-base[b][0]);sum+=term}
+    if(Math.abs(sum-p[k][1])>1e-6)return false;
+  }
+  return true;
+}
+function fitArith(p){
+  if(p.length<3)return false;
+  var dx=p[1][0]-p[0][0],dy=p[1][1]-p[0][1];
+  if(dy%dx!==0)return false;
+  var d=dy/dx;if(d===0)return false;
+  for(var i=2;i<p.length;i++)if(p[i][1]!==p[0][1]+d*(p[i][0]-p[0][0]))return false;
+  return true;
+}
+function fitGeo(p){
+  if(p.length<3||p[0][1]<=0)return false;
+  var v0=p[0][1],x0=p[0][0];
+  for(var r=2;r<=5;r++){
+    var up=true,down=true;
+    for(var i=1;i<p.length;i++){var pw=Math.pow(r,p[i][0]-x0);if(p[i][1]!==v0*pw)up=false;if(p[i][1]*pw!==v0)down=false}
+    if(up||down)return true;
+  }
+  return false;
+}
+function fitFib(p){
+  var m={},i,c=0;
+  p.forEach(function(x){m[x[0]]=x[1]});
+  for(i=0;i<20;i++)if(m[i]!==undefined&&m[i+1]!==undefined&&m[i+2]!==undefined){
+    if(m[i]+m[i+1]!==m[i+2])return false;c++;
+  }
+  return c>=2;
+}
+function fitAlt(p){
+  var A=[],B=[];
+  p.forEach(function(x){(x[0]%2===0?A:B).push([x[0]>>1,x[1]])});
+  if(A.length<3||B.length<3)return false;
+  return(fitArith(A)||fitGeo(A))&&(fitArith(B)||fitGeo(B));
+}
+function fitIds(s,j){
+  var p=[],i,ids=[];
+  for(i=0;i<s.length;i++)if(i!==j)p.push([i,s[i]]);
+  if(fitArith(p))ids.push("ar");
+  if(fitGeo(p))ids.push("ge");
+  if(polyFit(p,2))ids.push("q2");
+  if(polyFit(p,3))ids.push("q3");
+  if(fitFib(p))ids.push("fb");
+  if(fitAlt(p))ids.push("al");
+  if(p.length>=4)PRED.forEach(function(f){if(p.every(function(x){return f.f(x[1])}))ids.push(f.id)});
+  return ids;
+}
+/* Posiciones que se pueden señalar como intruso: quitando ese número, algún patrón encaja
+   y con él puesto no encaja. Un puzzle justo tiene exactamente una (o las que se pidan). */
+function explained(s){
+  var whole=fitIds(s,-1),out=[];
+  for(var j=0;j<s.length;j++){
+    var f=fitIds(s,j);
+    if(f.some(function(id){return whole.indexOf(id)<0}))out.push(j);
+  }
+  return out;
+}
+
+var BUILD={
+  arit:function(L,r){var neg=r()<.25,d=ri(r,2,9),a=neg?d*L+ri(r,2,12):ri(r,1,20),s=[];for(var i=0;i<L;i++)s.push(a+(neg?-d:d)*i);return{s:s,t:(neg?"Resta ":"Suma ")+d+" cada vez"}},
+  geo:function(L,r){var rr=L>=8?2:pick(r,[2,3]),a=ri(r,1,3),s=[];for(var i=0;i<L;i++)s.push(a*Math.pow(rr,i));if(rr===2&&r()<.25){s.reverse();return{s:s,t:"Se divide entre 2 cada vez"}}return{s:s,t:"Se multiplica por "+rr+" cada vez"}},
+  crec:function(L,r,lv){var st=lv>=3&&r()<.4?2:1,d0=ri(r,1,3),s=[ri(r,1,9)];for(var i=0;i<L-1;i++)s.push(s[i]+d0+st*i);return{s:s,t:"Los saltos van creciendo: +"+d0+", +"+(d0+st)+", +"+(d0+2*st)+"…"}},
+  cuad:function(L,r){var o=ri(r,1,5),s=[];for(var i=0;i<L;i++)s.push((i+o)*(i+o));return{s:s,t:"Cuadrados perfectos: "+o+"², "+(o+1)+"², "+(o+2)+"²…"}},
+  cubo:function(L,r){var o=ri(r,1,3),s=[];for(var i=0;i<L;i++)s.push(Math.pow(i+o,3));return{s:s,t:"Cubos: "+o+"³, "+(o+1)+"³, "+(o+2)+"³…"}},
+  tri:function(L,r){var o=ri(r,1,5),s=[];for(var i=0;i<L;i++){var n=i+o;s.push(n*(n+1)/2)}return{s:s,t:"Números triangulares (1, 3, 6, 10, 15…)"}},
+  primos:function(L,r){var s=[],n=pick(r,[2,3,5,7,11,13,17,19]);while(s.length<L){if(isPrime(n))s.push(n);n++}return{s:s,t:"Números primos seguidos"}},
+  fib:function(L,r){var a=ri(r,1,4),b=ri(r,1,5),s=[a,b];while(s.length<L)s.push(s[s.length-1]+s[s.length-2]);return{s:s,t:"Cada número es la suma de los dos anteriores"}},
+  alt:function(L,r,lv){
+    var d1=ri(r,2,6),a1=ri(r,1,10),A=[],B=[],i,t;
+    for(i=0;i<L/2;i++)A.push(a1+d1*i);
+    if(lv>=3&&r()<.5){var b0=ri(r,1,3);for(i=0;i<L/2;i++)B.push(b0*Math.pow(2,i));t="se duplican"}
+    else{var d2=ri(r,1,9),b1=ri(r,10,40);while(d2===d1)d2=ri(r,1,9);for(i=0;i<L/2;i++)B.push(b1+d2*i);t="suman "+d2}
+    var s=[];for(i=0;i<L/2;i++){s.push(A[i]);s.push(B[i])}
+    return{s:s,t:"Dos series mezcladas: las posiciones 1.ª, 3.ª, 5.ª… suman "+d1+" cada vez y las 2.ª, 4.ª, 6.ª… "+t}},
+  mult:function(L,r){var m=ri(r,2,9),pool=[],k;for(k=1;k<=L+6;k++)pool.push(k);var ks=shuffle(r,pool).slice(0,L).sort(function(a,b){return a-b});return{s:ks.map(function(x){return x*m}),p:function(n){return n%m===0},t:m===2?"Todos son pares":"Todos son múltiplos de "+m}},
+  dsum:function(L,r,lv){var S=lv>=3?pick(r,[12,13,14,15]):pick(r,[9,10,11]),lim=lv>=3?399:99,pool=[],n;for(n=10;n<=lim;n++)if(ds(n)===S)pool.push(n);var s=shuffle(r,pool).slice(0,L).sort(function(a,b){return a-b});return{s:s,p:function(n){return ds(n)===S},t:"Las cifras de cada número suman "+S}},
+  fin:function(L,r){var d=ri(r,1,9),pool=[],n;for(n=10;n<=99;n++)if(n%10===d)pool.push(n);var s=shuffle(r,pool).slice(0,L).sort(function(a,b){return a-b});return{s:s,p:function(n){return n%10===d},t:"Todos terminan en "+d}},
+  cont:function(L,r){var d=ri(r,1,9),pool=[],n;for(n=10;n<=99;n++)if(String(n).indexOf(String(d))>=0)pool.push(n);var s=shuffle(r,pool).slice(0,L).sort(function(a,b){return a-b});return{s:s,p:function(n){return String(n).indexOf(String(d))>=0},t:"Todos tienen la cifra "+d}}
+};
+
+function intruso(s,k,r,p){
+  var L=s.length,gap=Math.abs(s[L-1]-s[0])/(L-1)||2,span=Math.max(2,Math.round(gap*.8)),c=[],c2=[],d,x;
+  var lo=k>0?s[k-1]:-1e9,hi=k<L-1?s[k+1]:1e9,mn=Math.min(lo,hi),mx=Math.max(lo,hi);
+  for(d=-span;d<=span;d++){
+    if(!d)continue;x=s[k]+d;
+    if(x<1||s.indexOf(x)>=0||(p&&p(x)))continue;
+    c.push(x);if(x>mn&&x<mx)c2.push(x);
+  }
+  if(!c.length)return null;
+  return pick(r,c2.length&&r()<.6?c2:c);
+}
+function mkSingle(fam,L,r,lv){
+  for(var a=0;a<60;a++){
+    var b=BUILD[fam](L,r,lv);
+    for(var t=0;t<8;t++){
+      var k=ri(r,0,L-1),x=intruso(b.s,k,r,b.p);
+      if(x===null)continue;
+      var s=b.s.slice();s[k]=x;
+      var ex=explained(s);
+      if(ex.length===1&&ex[0]===k)return{s:s,k:[k],orig:[b.s[k]],t:b.t,base:b.s,fam:fam};
+    }
+  }
+  return null;
+}
+var F2=["arit","geo","crec","cuad","tri","primos","mult","fib"];
+function mkDouble(r,lv){
+  for(var a=0;a<300;a++){
+    var fa=pick(r,F2),fb=pick(r,F2);
+    if(fa===fb)continue;
+    var pa=mkSingle(fa,5,r,lv),pb=mkSingle(fb,5,r,lv);
+    if(!pa||!pb)continue;
+    var s=[],i;
+    for(i=0;i<5;i++){s.push(pa.s[i]);s.push(pb.s[i])}
+    return{s:s,k:[pa.k[0]*2,pb.k[0]*2+1],orig:[pa.orig[0],pb.orig[0]],dbl:true,
+      t:"Dos series mezcladas",ta:"Serie 1 (posiciones 1.ª, 3.ª, 5.ª…): "+pa.t,tb:"Serie 2 (posiciones 2.ª, 4.ª, 6.ª…): "+pb.t};
+  }
+  return null;
+}
+var FALL={s:[2,4,6,9,10,12,14],k:[3],orig:[8],t:"Suma 2 cada vez",base:[2,4,6,8,10,12,14]};
+function mkBase(fam,L,r,lv){var b=BUILD[fam](L,r,lv);return{base:b.s,t:b.t,fam:fam}}
+function checkInv(base,k,x){
+  if(!(x>=0&&x<1e6&&Math.floor(x)===x))return"num";
+  if(x===base[k])return"igual";
+  if(base.indexOf(x)>=0)return"dup";
+  var s=base.slice();s[k]=x;
+  var ex=explained(s);
+  if(ex.length===1&&ex[0]===k)return"ok";
+  if(ex.length===0)return"encaja";
+  if(ex.indexOf(k)<0)return"otro";
+  return"ambiguo";
+}
+function makePlan(lvl,r,inv){
+  var f;
+  if(lvl===1)return[["arit",6],["arit",6],["mult",6],["geo",6],["crec",7],["mult",7],["cuad",7],["tri",7]].map(function(x){return{fam:x[0],L:x[1]}});
+  if(lvl===2){f=shuffle(r,["crec","cuad","tri","primos","fib","alt","dsum","fin","cont","cubo"]).slice(0,8);return f.map(function(x){return{fam:x,L:x==="alt"?8:7}})}
+  f=shuffle(r,["cubo","fib","alt","dsum","cont","primos","crec","fin"]);
+  return f.map(function(x,i){return{fam:x,L:8,dbl:!inv&&(i===2||i===5||i===7)}});
+}
+/*END*/
+
+var KEY="cadena-rota-lg";
+var $=function(i){return document.getElementById(i)};
+function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!==undefined)e.textContent=x;return e}
+function load(){try{return JSON.parse(localStorage.getItem(KEY)||"null")||{}}catch(e){return{}}}
+function save(s){try{localStorage.setItem(KEY,JSON.stringify(s))}catch(e){}}
+function dstr(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function hoy(){return dstr(new Date())}
+function ayer(){var d=new Date();d.setDate(d.getDate()-1);return dstr(d)}
+
+var G={lvl:2,inv:false,ct:false,daily:false,rand:Math.random,rounds:8,i:0,lives:3,pts:0,run:0,err:0,badge:false,hist:[],cur:null,sel:[],done:false,t0:0,tmax:12,tid:0,plan:[]};
+
+function hud(){
+  $("vidas").textContent="❤️".repeat(Math.max(0,G.lives))+"🖤".repeat(Math.max(0,3-G.lives));
+  $("ronda").textContent="Cadena "+Math.min(G.i,G.rounds)+"/"+G.rounds;
+  $("pts").textContent=G.pts+" pts"+(G.run>1?" · racha "+G.run:"");
+}
+function stopTimer(){if(G.tid){clearInterval(G.tid);G.tid=0}$("tbar").hidden=true;$("tleft").textContent=""}
+function tick(){
+  var left=G.tmax-(performance.now()-G.t0)/1000;
+  $("tfill").style.width=Math.max(0,left/G.tmax*100)+"%";
+  $("tleft").textContent=Math.max(0,Math.ceil(left))+" s";
+  if(left<=0&&!G.done)resolve(false,"Se acabó el tiempo.");
+}
+function startTimer(){
+  stopTimer();
+  if(!G.ct)return;
+  var base=G.inv?25:(G.cur.dbl?25:12);
+  G.tmax=Math.max(6,base-Math.min(3,Math.max(0,G.run-2)));
+  G.t0=performance.now();
+  $("tbar").hidden=false;G.tid=setInterval(tick,100);tick();
+}
+
+function make(){
+  var pl=G.plan[G.i-1],r=G.rand,c=null;
+  if(G.inv)c=mkBase(pl.fam,pl.L,r,G.lvl);
+  else if(pl.dbl)c=mkDouble(r,G.lvl);
+  else c=mkSingle(pl.fam,pl.L,r,G.lvl);
+  return c||(G.inv?{base:FALL.base,t:FALL.t}:FALL);
+}
+
+function startGame(daily){
+  stopTimer();
+  G.daily=!!daily;
+  G.lvl=daily?2:+document.querySelector("input[name=lvl]:checked").value;
+  G.inv=daily?false:document.querySelector("input[name=modo]:checked").value==="inv";
+  G.ct=daily?false:$("ct").checked;
+  G.rand=daily?mulberry(seedOf(hoy()+"-cr")):Math.random;
+  G.plan=makePlan(G.lvl,G.rand,G.inv);
+  G.i=0;G.lives=3;G.pts=0;G.run=0;G.err=0;G.badge=false;G.hist=[];
+  $("fin").hidden=true;$("juego").hidden=false;
+  next();
+}
+
+function next(){
+  if(G.lives<=0){finish(false);return}
+  if(G.i>=G.rounds){finish(true);return}
+  G.i++;G.done=false;G.cur=make();G.sel=[];
+  $("msg").textContent="";$("sol").hidden=true;$("sig").hidden=true;
+  render();startTimer();
+}
+
+function render(){
+  var c=G.cur,b=$("tablero"),pr=$("principal"),box=el("div","nums"),i;
+  b.textContent="";hud();
+  if(G.inv){
+    b.appendChild(el("p","note","Este es el patrón completo. Toca un número y escribe otro que lo sustituya. Cuanto más sutil, mejor, pero tiene que quedar un único intruso claro."));
+    c.base.forEach(function(v,i){
+      var bt=el("button","",String(v));bt.type="button";bt.dataset.i=i;
+      bt.setAttribute("aria-label","Posición "+(i+1)+": "+v);
+      bt.onclick=function(){if(G.done)return;G.sel=[i];paintInv()};
+      box.appendChild(bt);
+    });
+    b.appendChild(box);
+    var bl=el("div","build"),inp=document.createElement("input");
+    inp.type="number";inp.id="nv";inp.inputMode="numeric";inp.min="0";inp.setAttribute("aria-label","Número intruso");inp.placeholder="Intruso";
+    inp.onkeydown=function(e){if(e.key==="Enter"){e.preventDefault();if(!pr.disabled)pr.click()}};
+    inp.oninput=paintInv;
+    bl.appendChild(inp);b.appendChild(bl);
+    pr.hidden=false;pr.textContent="Comprobar";paintInv();
+  }else{
+    b.appendChild(el("p","note",c.dbl?"Hay dos secuencias mezcladas y un intruso en cada una. Toca los dos.":"Toca el número que rompe el patrón."));
+    c.s.forEach(function(v,i){
+      var bt=el("button","",String(v));bt.type="button";bt.dataset.i=i;
+      bt.setAttribute("aria-label","Posición "+(i+1)+": "+v);
+      bt.onclick=function(){pickNum(i)};
+      box.appendChild(bt);
+    });
+    b.appendChild(box);
+    pr.hidden=true;
+  }
+}
+function paintInv(){
+  var bs=document.querySelectorAll("#tablero .nums button");
+  bs.forEach(function(bt,i){bt.classList.toggle("sel",G.sel[0]===i&&!G.done)});
+  var inp=$("nv");
+  $("principal").disabled=G.done||G.sel.length===0||!inp||inp.value.trim()==="";
+}
+function pickNum(i){
+  if(G.done)return;
+  var p=G.sel.indexOf(i);
+  if(p>=0)G.sel.splice(p,1);else G.sel.push(i);
+  var need=G.cur.dbl?2:1;
+  document.querySelectorAll("#tablero .nums button").forEach(function(bt,j){bt.classList.toggle("sel",G.sel.indexOf(j)>=0)});
+  if(G.sel.length>=need){
+    var ok=G.sel.slice().sort(function(a,b){return a-b}).join()===G.cur.k.slice().sort(function(a,b){return a-b}).join();
+    resolve(ok,G.cur.dbl?"No son esos dos.":"No era ese.");
+  }
+}
+function principal(){
+  if(G.done||!G.inv)return;
+  var k=G.sel[0],x=Number($("nv").value);
+  if(k===undefined||$("nv").value.trim()==="")return;
+  var res=checkInv(G.cur.base,k,x),c=G.cur,why={
+    num:"Escribe un número entero, sin signo ni decimales.",
+    igual:"Ese es el mismo número que ya estaba: no rompe nada.",
+    dup:"Ese número ya aparece en la secuencia. Elige otro.",
+    encaja:"Con ese número el patrón sigue pareciendo correcto.",
+    otro:"Con ese número se detectaría otro intruso distinto al que has cambiado.",
+    ambiguo:"Con ese número habría más de un posible intruso."
+  };
+  if(res==="num"||res==="dup"){$("msg").textContent=why[res];return}
+  c.k=[k];c.orig=[c.base[k]];c.x=x;
+  c.s=c.base.slice();c.s[k]=x;
+  var gap=Math.abs(c.base[c.base.length-1]-c.base[0])/(c.base.length-1)||2;
+  c.sutil=res==="ok"&&Math.abs(x-c.base[k])<=Math.max(1,Math.round(gap/3));
+  resolve(res==="ok",why[res]||"");
+}
+
+function resolve(ok,why){
+  if(G.done)return;
+  G.done=true;
+  var left=G.ct?Math.max(0,G.tmax-(performance.now()-G.t0)/1000):0;
+  stopTimer();
+  G.hist.push(ok?"🟩":"🟥");
+  var msg,c=G.cur;
+  if(ok){
+    var g=10*G.lvl+Math.ceil(left)+(c.sutil?10:0);G.pts+=g;G.run++;
+    msg=(G.inv?(c.sutil?"¡Muy sutil! ":"¡Intruso válido! "):"¡Cazado! ")+"+"+g;
+    if(G.run===5){G.badge=true;msg+=" 🏅 Insignia «Cazador de patrones»: 5 seguidos."}
+  }else{G.lives--;G.err++;G.run=0;msg=(why||"No era esa.")+(G.inv?"":" ¡Era ese patrón!")}
+  reveal(ok);
+  $("msg").textContent=msg;
+  $("principal").hidden=true;
+  var sg=$("sig");sg.hidden=false;
+  sg.textContent=(G.lives<=0||G.i>=G.rounds)?"Ver resultado":"Siguiente";
+  sg.focus();
+  hud();
+}
+function reveal(ok){
+  var c=G.cur,s=$("sol"),bs=document.querySelectorAll("#tablero .nums button");
+  s.hidden=false;s.textContent="";
+  function line(t){s.appendChild(el("p","",t))}
+  bs.forEach(function(bt,i){
+    bt.disabled=true;bt.style.opacity=1;bt.classList.remove("sel");
+    if(G.inv){
+      if(c.k.indexOf(i)>=0){
+        bt.textContent=String(c.s[i]);
+        var sm=el("small","","era "+c.orig[0]);bt.appendChild(sm);
+        bt.classList.add(ok?"mine":"bad");
+      }
+    }else if(c.k.indexOf(i)>=0){
+      bt.classList.add("bad");bt.appendChild(el("small","","debía ser "+c.orig[c.k.indexOf(i)]));
+    }else if(G.sel.indexOf(i)>=0){bt.classList.add("wrong")}
+  });
+  if(G.inv){
+    line("Patrón: "+c.t+(/…$/.test(c.t)?"":"."));
+    if(c.k&&c.k.length&&ok)line("Cambiaste el "+c.orig[0]+" por el "+c.x+".");
+    else if(c.k&&c.k.length)line("El patrón correcto era: "+c.base.join(" · "));
+  }else{
+    if(c.dbl){line(c.ta);line(c.tb)}else line("Patrón: "+c.t+(/…$/.test(c.t)?"":"."));
+    line(c.k.length>1?"Los intrusos eran el "+c.s[c.k[0]]+" y el "+c.s[c.k[1]]+" (debían ser "+c.orig[0]+" y "+c.orig[1]+").":"El intruso era el "+c.s[c.k[0]]+": debía ser "+c.orig[0]+".");
+    line("Secuencia correcta: "+(c.base?c.base.join(" · "):c.s.map(function(v,i){var p=c.k.indexOf(i);return p>=0?c.orig[p]:v}).join(" · ")));
+  }
+}
+
+function finish(win){
+  stopTimer();
+  var st=load();
+  $("juego").hidden=true;$("fin").hidden=false;
+  $("fin-t").textContent=win?"¡Cadena reparada!":"Sin vidas";
+  $("fin-p").textContent=(G.hist.length-G.err)+" de "+G.hist.length+" cadenas bien · "+G.pts+" puntos"+(G.badge?" · 🏅 Cazador de patrones":"");
+  $("fin-h").textContent=G.hist.join("");
+  if(win){
+    st.w=(st.w||0)+1;
+    if(G.pts>(st.rec||0))st.rec=G.pts;
+  }
+  if(G.badge)st.insig=(st.insig||0)+1;
+  if(G.daily&&win&&G.err===0&&st.dia!==hoy()){
+    st.rd=st.dia===ayer()?(st.rd||0)+1:1;st.dia=hoy();
+    $("fin-p").textContent+=" · racha diaria: "+st.rd;
+  }
+  save(st);stats();
+  $("comp").hidden=!G.daily;
+  $("comp-m").textContent="";
+}
+function stats(){
+  var st=load();
+  $("rec").textContent="Ganadas: "+(st.w||0)+" · Mejor puntuación: "+(st.rec||0)+(st.insig?" · Insignias: "+st.insig:"")+(st.rd?" · Racha diaria: "+st.rd:"");
+}
+function compartir(){
+  var t="Cadena rota · reto del día "+hoy()+"\n"+G.hist.join("")+"\n"+G.pts+" puntos";
+  var m=$("comp-m");
+  try{navigator.clipboard.writeText(t).then(function(){m.textContent="Copiado. Pégalo donde quieras."},function(){m.textContent=t})}
+  catch(e){m.textContent=t}
+}
+
+$("nueva").onclick=function(){startGame(false)};
+$("diario").onclick=function(){startGame(true)};
+$("otra").onclick=function(){startGame(false)};
+$("comp").onclick=compartir;
+$("principal").onclick=principal;
+$("sig").onclick=next;
+document.addEventListener("keydown",function(e){
+  var t=e.target&&e.target.tagName;
+  if(t==="SELECT"||t==="INPUT"||t==="TEXTAREA")return;
+  if(document.querySelector("dialog[open]")||!G.cur)return;
+  if(e.key==="Enter"&&t!=="BUTTON"){
+    if(G.done&&!$("sig").hidden)$("sig").click();
+    else if(!G.done&&!$("principal").hidden&&!$("principal").disabled)$("principal").click();
+  }
+});
+stats();
+startGame(false);
+})();
+</script>
+<script src="ayuda.js" data-juego="cadena-rota"></script>
+</body>
+</html>
