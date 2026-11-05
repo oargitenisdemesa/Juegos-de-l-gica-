@@ -1,0 +1,228 @@
+<!doctype html>
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Letras Zen</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Source+Sans+3:wght@400;600&display=swap">
+<style>
+:root{
+  /* Calm paper and sage palette; quiet surfaces, one accent. */
+  --bg:#f3f1ea; --fg:#2d332e; --muted:#7d8478; --accent:#5f7d62; --tile:#ffffff; --line:#d9d6cb;
+  --font-display:"Fraunces",Georgia,serif; --font-body:"Source Sans 3",system-ui,sans-serif;
+  color-scheme:light;
+}
+/* Aliases que usa el panel de ayuda */
+:root{--panel:var(--tile);--ink:var(--fg)}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#1f2420; --fg:#e7e5dc; --muted:#9aa294; --accent:#9dbb9f; --tile:#2a302b; --line:#3a4138;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1f2420; --fg:#e7e5dc; --muted:#9aa294; --accent:#9dbb9f; --tile:#2a302b; --line:#3a4138;
+  color-scheme:dark;
+}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.4 var(--font-body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-top:24px;padding-bottom:32px;display:flex;flex-direction:column;align-items:center;min-height:100%;box-sizing:border-box}
+h1{font:600 28px/1.1 var(--font-display);margin:0;text-wrap:balance;text-align:center}
+.sub{color:var(--muted);margin:6px 0 18px;text-align:center}
+.card{width:100%;max-width:420px;display:flex;flex-direction:column;align-items:center;gap:18px}
+.words{display:flex;flex-direction:column;gap:8px;width:100%}
+.row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.box{width:34px;height:40px;border-radius:8px;background:var(--tile);border:1px solid var(--line);
+  display:grid;place-items:center;font:600 20px var(--font-display);text-transform:uppercase}
+.box.empty{border-style:dashed;color:transparent}
+.box.solved{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.current{height:28px;font:600 20px var(--font-display);letter-spacing:.2em;color:var(--accent);text-transform:uppercase}
+.wheel{position:relative;width:260px;height:260px;touch-action:none;user-select:none}
+.wheel .ring{position:absolute;inset:20px;border:1px solid var(--line);border-radius:50%}
+.letter{position:absolute;width:52px;height:52px;margin:-26px 0 0 -26px;border-radius:50%;
+  background:var(--tile);border:1px solid var(--line);color:var(--fg);font:600 22px var(--font-display);
+  display:grid;place-items:center;cursor:pointer;text-transform:uppercase;padding:0}
+.letter.on{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.letter:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+button.btn{font:600 15px var(--font-body);padding:9px 16px;border-radius:999px;border:1px solid var(--line);
+  background:transparent;color:var(--fg);cursor:pointer}
+button.btn[aria-pressed="true"]{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+button.btn:disabled{opacity:.45;cursor:default}
+.opts{color:var(--muted);font-size:14px;text-align:center}
+.msg{min-height:20px;color:var(--muted);font-size:14px}
+.overlay{position:fixed;inset:0;background:color-mix(in srgb,var(--bg) 85%,transparent);display:flex;align-items:center;justify-content:center;padding:24px}
+.overlay[hidden]{display:none}
+.panel{background:var(--tile);border:1px solid var(--line);border-radius:16px;padding:24px;max-width:340px;text-align:center}
+.panel h2{font:600 24px var(--font-display);margin:0 0 14px}
+@media (prefers-reduced-motion:no-preference){.box.solved{transition:background .4s}}
+</style>
+
+<main class="card">
+  <div>
+    <h1>Letras Zen</h1>
+    <p class="sub" id="date"></p>
+  </div>
+
+  <div class="words" id="words" aria-label="Palabras ocultas"></div>
+
+  <div class="current" id="current" aria-live="polite"></div>
+
+  <div class="wheel" id="wheel" aria-label="Rueda de letras">
+    <div class="ring"></div>
+  </div>
+
+  <div class="actions">
+    <button class="btn" id="zen" aria-pressed="false">Zen</button>
+    <button class="btn" id="hint">Pistas (6)</button>
+    <button class="btn" id="shuffle">Reordenar letras</button>
+  </div>
+  <p class="opts">Zen: desvela la primera letra de cada palabra. Pistas: desvela hasta 6 letras aleatorias.</p>
+  <div class="msg" id="msg"></div>
+</main>
+
+<div class="overlay" id="win" hidden>
+  <div class="panel">
+    <h2>¡Enhorabuena! Lo has conseguido</h2>
+    <button class="btn" id="close">Cerrar</button>
+  </div>
+</div>
+
+<script>
+// Puzzles: a letter wheel and the words hidden in it. Each day picks one.
+const PUZZLES = [
+  { letters: "AMORSE", words: ["AMOR", "MESA", "ROSA", "MORA", "MARES"] },
+  { letters: "CALORT", words: ["CALOR", "TOCAR", "COLA", "ORCA", "COTA"] },
+  { letters: "PALOMA", words: ["PALOMA", "PALMA", "PALA", "MAPA", "LAMA"] }
+];
+
+const now = new Date();
+const dayNum = Math.floor((Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) - Date.UTC(2026, 0, 1)) / 864e5);
+const dayKey = now.toISOString().slice(0, 10);
+const puzzle = PUZZLES[((dayNum % PUZZLES.length) + PUZZLES.length) % PUZZLES.length];
+document.getElementById("date").textContent = now.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" });
+
+// Progress per day, kept in this browser only.
+let saved = {};
+try { saved = JSON.parse(localStorage.getItem("letraszen") || "{}"); } catch (e) {}
+const state = saved[dayKey] || { found: [], revealed: {}, hints: 6, zen: false, order: null };
+const persist = () => { try { saved[dayKey] = state; localStorage.setItem("letraszen", JSON.stringify(saved)); } catch (e) {} };
+
+if (!state.order) state.order = puzzle.letters.split("").map((_, i) => i);
+let sel = [];
+
+const wordsEl = document.getElementById("words");
+const wheelEl = document.getElementById("wheel");
+const currentEl = document.getElementById("current");
+const msgEl = document.getElementById("msg");
+const zenBtn = document.getElementById("zen");
+const hintBtn = document.getElementById("hint");
+
+function flash(text) { msgEl.textContent = text; clearTimeout(flash.t); flash.t = setTimeout(() => msgEl.textContent = "", 1600); }
+
+function renderWords() {
+  wordsEl.innerHTML = "";
+  puzzle.words.forEach(w => {
+    const row = document.createElement("div");
+    row.className = "row";
+    const solved = state.found.includes(w);
+    const rev = state.revealed[w] || [];
+    for (let i = 0; i < w.length; i++) {
+      const b = document.createElement("div");
+      const show = solved || rev[i] || (state.zen && i === 0);
+      b.className = "box" + (solved ? " solved" : "") + (show ? "" : " empty");
+      b.textContent = show ? w[i] : "";
+      row.appendChild(b);
+    }
+    wordsEl.appendChild(row);
+  });
+  zenBtn.setAttribute("aria-pressed", String(state.zen));
+  hintBtn.textContent = `Pistas (${state.hints})`;
+  hintBtn.disabled = state.hints === 0;
+}
+
+function renderWheel() {
+  wheelEl.querySelectorAll(".letter").forEach(n => n.remove());
+  const n = state.order.length;
+  state.order.forEach((letterIdx, pos) => {
+    const a = (-Math.PI / 2) + (pos / n) * Math.PI * 2;
+    const b = document.createElement("button");
+    b.className = "letter";
+    b.dataset.i = pos;
+    b.textContent = puzzle.letters[letterIdx];
+    b.style.left = (130 + 98 * Math.cos(a)) + "px";
+    b.style.top = (130 + 98 * Math.sin(a)) + "px";
+    b.setAttribute("aria-label", puzzle.letters[letterIdx]);
+    wheelEl.appendChild(b);
+  });
+}
+
+function currentWord() { return sel.map(i => wheelEl.querySelector(`[data-i="${i}"]`).textContent).join(""); }
+
+function paintSelection() {
+  wheelEl.querySelectorAll(".letter").forEach(b => b.classList.toggle("on", sel.includes(+b.dataset.i)));
+  currentEl.textContent = currentWord();
+}
+
+function submit() {
+  const w = currentWord();
+  sel = []; paintSelection();
+  if (w.length < 2) return;
+  if (state.found.includes(w)) return flash("Ya la tienes");
+  if (puzzle.words.includes(w)) {
+    state.found.push(w);
+    persist(); renderWords();
+    if (state.found.length === puzzle.words.length) document.getElementById("win").hidden = false;
+  } else {
+    flash("Esa no está");
+  }
+}
+
+// Drag across the letters to form a word.
+wheelEl.addEventListener("pointerdown", e => {
+  const b = e.target.closest(".letter");
+  if (!b) return;
+  wheelEl.setPointerCapture(e.pointerId);
+  sel = [+b.dataset.i]; paintSelection();
+});
+wheelEl.addEventListener("pointermove", e => {
+  if (!sel.length) return;
+  const el = document.elementFromPoint(e.clientX, e.clientY);
+  const b = el && el.closest && el.closest(".letter");
+  if (!b) return;
+  const i = +b.dataset.i;
+  if (!sel.includes(i)) { sel.push(i); paintSelection(); }
+});
+wheelEl.addEventListener("pointerup", () => { if (sel.length) submit(); });
+wheelEl.addEventListener("pointercancel", () => { sel = []; paintSelection(); });
+
+zenBtn.onclick = () => { state.zen = !state.zen; persist(); renderWords(); };
+
+hintBtn.onclick = () => {
+  if (state.hints === 0) return;
+  const open = [];
+  puzzle.words.forEach(w => {
+    if (state.found.includes(w)) return;
+    const rev = state.revealed[w] || (state.revealed[w] = Array(w.length).fill(false));
+    rev.forEach((r, i) => { if (!r) open.push([w, i]); });
+  });
+  if (!open.length) return;
+  const [w, i] = open[Math.floor(Math.random() * open.length)];
+  state.revealed[w][i] = true;
+  state.hints--;
+  persist(); renderWords();
+};
+
+document.getElementById("shuffle").onclick = () => {
+  for (let i = state.order.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [state.order[i], state.order[j]] = [state.order[j], state.order[i]];
+  }
+  persist(); renderWheel();
+};
+
+document.getElementById("close").onclick = () => document.getElementById("win").hidden = true;
+
+renderWords();
+renderWheel();
+if (state.found.length === puzzle.words.length) document.getElementById("win").hidden = false;
+</script>
+
+<script src="ayuda.js" data-juego="letras-zen"></script>

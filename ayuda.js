@@ -183,6 +183,18 @@
       ],
       ejemplo: "2 · 4 · 6 · 9 · 10 · 12 · 14: todos van de 2 en 2, así que sobra el 9 (debería ser 8).",
       niveles: "Fácil: 6 o 7 números con sumas, multiplicaciones y múltiplos. Medio: 7 u 8 números, con saltos crecientes, cuadrados, primos, Fibonacci, series mezcladas y propiedades de las cifras. Difícil: 8 números, con cubos y patrones más raros, y tres de las ocho cadenas tienen dos intrusos. Contrarreloj: 12 segundos por cadena (25 si hay dos intrusos o en patrón inverso), y tras varios aciertos seguidos el tiempo baja hasta 3 segundos. El reto del día es de nivel medio y sin tiempo, y tu racha sube un día cada vez que lo completas sin ningún error."
+    },
+    "letras-zen": {
+      titulo: "Letras Zen",
+      objetivo: "Encontrar todas las palabras ocultas uniendo letras de la rueda.",
+      pasos: [
+        "Arrastra el dedo (o el ratón) por las letras de la rueda para formar una palabra. Al soltar, se comprueba.",
+        "Las casillas vacías marcan la longitud de cada palabra. Si la palabra es correcta, se rellena en su hueco; si no, aparece «Esa no está».",
+        "Dentro de una palabra cada letra de la rueda se usa una sola vez, pero una misma letra puede aparecer en varias palabras.",
+        "«Reordenar letras» cambia la posición de las letras en la rueda, por si te ayuda a verlas de otra forma."
+      ],
+      ejemplo: "Con las letras A, M, O, R, S y E puedes formar MARES: arrastra M, A, R, E y S en ese orden.",
+      niveles: "No hay niveles ni tiempo. Cada día hay un reto nuevo, y el progreso se guarda en este navegador. «Zen» desvela la primera letra de cada palabra; «Pistas» desvela hasta 6 letras aleatorias."
     }
   };
 
