@@ -203,7 +203,7 @@
       pasos: [
         "Hay varias personas (Ana, Beto, Carla y Dani). Los caballeros siempre dicen la verdad y los mentirosos siempre mienten.",
         "Cada persona hace una afirmación sobre otra: «X es caballero» o «X es mentiroso».",
-        "Para cada persona, marca si es Caballero o Mentiroso. Si vuelves a pulsar la misma opción, se quita la marca.",
+        "Ana ya viene marcada como dato del enigma. Para cada una de las demás, marca si es Caballero o Mentiroso. Si vuelves a pulsar la misma opción, se quita la marca.",
         "Cuando las hayas marcado todas, pulsa «Comprobar». Si alguna afirmación no encaja con tus respuestas, el juego te lo dice.",
         "Ganas cuando tus respuestas son coherentes con todas las afirmaciones. Para resolverlo, prueba suposiciones y mira si se contradicen."
       ],
@@ -215,8 +215,8 @@
       objetivo: "Encontrar la moneda más pesada con el menor número de pesadas.",
       pasos: [
         "Una moneda pesa más que las demás. Todas las demás pesan lo mismo.",
-        "Toca una moneda para ponerla a la izquierda (I). Vuelve a tocarla para ponerla a la derecha (D) y otra vez para quitarla.",
-        "Pulsa «Pesar» para ver qué lado pesa más o si pesan lo mismo. Hay que poner el mismo número de monedas a cada lado.",
+        "Toca una moneda para cambiarla: el número significa sin usar, I a la izquierda y D a la derecha. Sigue tocándola para cambiarla de nuevo.",
+        "Pulsa «Pesar» para ver qué lado pesa más. Hay que poner el mismo número de monedas a cada lado. Si pesan lo mismo, la moneda pesada no está en la balanza.",
         "Cada pesada gasta una de las que tienes disponibles. Los resultados aparecen en el historial.",
         "Para dar la respuesta, pulsa «Adivinar» y toca la moneda que crees pesada. Si fallas, puedes seguir probando sin perder nada, y adivinar no gasta pesadas.",
         "Ganas si encuentras la moneda pesada. En contrarreloj tienes 2 minutos."

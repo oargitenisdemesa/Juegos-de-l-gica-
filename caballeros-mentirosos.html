@@ -15,6 +15,7 @@ button:disabled{opacity:.4;cursor:default}
 .card h2{font-size:1.05rem;margin:0 0 4px}
 .card p{margin:0 0 8px}
 .card .bar{margin:6px 0 0;justify-content:flex-start}
+.tag{font-size:.8rem;color:var(--mute);font-weight:normal}
 .msg{min-height:1.4em;text-align:center;color:var(--mute);margin:8px 0}
 </style></head><body><main>
 <a class="back" href="index.html">← Juegos de lógica</a>
@@ -26,42 +27,49 @@ button:disabled{opacity:.4;cursor:default}
 <div class="bar"><button id="ck">Comprobar</button></div>
 <p class="msg" id="msg"></p>
 <p class="stats" id="t"></p>
-<p class="stats">Los caballeros siempre dicen la verdad; los mentirosos, siempre mienten. Averigua quién es quién.</p>
+<p class="stats">Los caballeros siempre dicen la verdad; los mentirosos, siempre mienten. Ana ya viene marcada como dato del enigma: a partir de ahí, deduce el resto.</p>
 </main>
 <script>
 const KEY="caballeros-lg";
 const NAMES=["Ana","Beto","Carla","Dani"];
 const $=id=>document.getElementById(id);
-let lvl=2,st=[],guess=[],done=false,timed=false,tmr=null,left=0,N=2;
+let lvl=2,N=2,st=[],anchor=null,guess=[],done=false,timed=false,tmr=null,left=0;
 
-// Un tipo por persona (true = caballero). Cada persona afirma algo sobre otra.
-// Una afirmación es verdadera si el hablante es caballero y falsa si es mentiroso.
+// Cada persona afirma algo sobre otra. Una afirmación es verdadera si el hablante
+// es caballero y falsa si es mentiroso. Para romper la simetría (invertir a todos
+// daría otra solución válida) se fija el tipo de Ana como dato del enigma.
 function valid(types,list){return list.every(x=>types[x.s]===(types[x.t]===x.claim))}
-function countSols(n,list){let c=0;for(let a=0;a<(1<<n);a++){const ty=Array.from({length:n},(_,i)=>!!(a>>i&1));if(valid(ty,list))c++}return c}
+function countSols(n,list,a){let c=0;for(let m=0;m<(1<<n);m++){const ty=Array.from({length:n},(_,i)=>!!(m>>i&1));if(ty[a.s]===a.v&&valid(ty,list))c++}return c}
 function gen(n){
   for(let k=0;k<20000;k++){
     const truth=Array.from({length:n},()=>Math.random()<.5);
     const list=[];
     for(let s=0;s<n;s++){
       let t;do{t=Math.floor(Math.random()*n)}while(t===s);
-      const claim=truth[s]?truth[t]:!truth[t];
-      list.push({s,t,claim});
+      list.push({s,t,claim:truth[s]?truth[t]:!truth[t]});
     }
-    if(countSols(n,list)===1)return list;
+    const a={s:0,v:truth[0]};
+    if(countSols(n,list,a)===1)return {list,anchor:a};
   }
-  return [];
+  return null;
 }
 function wins(){try{return JSON.parse(localStorage.getItem(KEY)||'{"w":0}').w||0}catch(e){return 0}}
 function addWin(){try{localStorage.setItem(KEY,JSON.stringify({w:wins()+1}))}catch(e){}}
 function stop(){clearInterval(tmr);tmr=null}
 function tick(){$("t").textContent=timed?"⏱ "+left+" s":""}
 function start(){stop();if(!timed){tick();return}left=120;tick();tmr=setInterval(()=>{left--;tick();if(left<=0){stop();done=true;$("msg").textContent="Se acabó el tiempo. Pulsa Nuevo.";render()}},1000)}
-function newGame(){N=lvl;st=gen(N);guess=Array(N).fill(null);done=false;$("msg").textContent="";start();render()}
-function setG(i,v){if(done)return;guess[i]=guess[i]===v?null:v;render()}
+function newGame(){
+  N=lvl;
+  let g=null;while(!g)g=gen(N);
+  st=g.list;anchor=g.anchor;
+  guess=Array(N).fill(null);guess[anchor.s]=anchor.v;
+  done=false;$("msg").textContent="";start();render();
+}
+function setG(i,v){if(done||i===anchor.s)return;guess[i]=guess[i]===v?null:v;render()}
 function check(){
   if(done)return;
   if(guess.includes(null))return $("msg").textContent="Marca a todas las personas antes de comprobar.";
-  if(valid(guess,st)){done=true;stop();addWin();$("msg").textContent="¡Correcto! Has resuelto el enigma.";render()}
+  if(valid(guess,st)&&guess[anchor.s]===anchor.v){done=true;stop();addWin();$("msg").textContent="¡Correcto! Has resuelto el enigma.";render()}
   else $("msg").textContent="Alguna afirmación no encaja con tus respuestas. Revisa.";
 }
 function render(){
@@ -72,9 +80,10 @@ function render(){
   const box=$("people");box.innerHTML="";
   st.forEach(x=>{
     const d=document.createElement("div");d.className="card";
-    d.innerHTML=`<h2>${NAMES[x.s]}</h2><p>Dice: «${NAMES[x.t]} es ${x.claim?"caballero":"mentiroso"}».</p>`;
+    const dato=x.s===anchor.s?' <span class="tag">· dato del enigma</span>':"";
+    d.innerHTML=`<h2>${NAMES[x.s]}${dato}</h2><p>Dice: «${NAMES[x.t]} es ${x.claim?"caballero":"mentiroso"}».</p>`;
     const bar=document.createElement("div");bar.className="bar";
-    [["Caballero",true],["Mentiroso",false]].forEach(([t,v])=>{const b=document.createElement("button");b.textContent=t;b.setAttribute("aria-pressed",String(guess[x.s]===v));b.disabled=done;b.onclick=()=>setG(x.s,v);bar.appendChild(b)});
+    [["Caballero",true],["Mentiroso",false]].forEach(([t,v])=>{const b=document.createElement("button");b.textContent=t;b.setAttribute("aria-pressed",String(guess[x.s]===v));b.disabled=done||x.s===anchor.s;b.onclick=()=>setG(x.s,v);bar.appendChild(b)});
     d.appendChild(bar);box.appendChild(d);
   });
   $("ck").disabled=done;
@@ -84,5 +93,4 @@ $("nw").onclick=newGame;
 $("tm").onclick=()=>{timed=!timed;newGame()};
 newGame();
 </script>
-<script src="ayuda.js" data-juego="caballeros-mentirosos"></script>
 </body></html>
