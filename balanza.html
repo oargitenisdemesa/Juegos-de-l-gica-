@@ -16,6 +16,7 @@ button:disabled{opacity:.4;cursor:default}
 .coin{aspect-ratio:1;border-radius:50%;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);font-size:.95rem;padding:0}
 .coin.L{background:#e6efe0;border-color:#7fa074}
 .coin.R{background:#f6e3df;border-color:#c07a6e}
+.coin.ok{opacity:.35}
 @media (prefers-color-scheme:dark){.coin.L{background:#2a3a28}.coin.R{background:#3d2a27}}
 .hist{background:var(--panel);border:1.5px solid var(--line);border-radius:14px;padding:10px 14px;min-height:48px}
 .hist p{margin:4px 0}
@@ -26,7 +27,7 @@ button:disabled{opacity:.4;cursor:default}
 <p class="stats" id="st"></p>
 <div class="bar" id="lv"></div>
 <div class="bar"><button id="tm" aria-pressed="false">Contrarreloj</button><button id="nw">Nuevo</button></div>
-<p class="stats">Una moneda pesa más que las demás. Toca una moneda para cambiarla: el número significa que aún no la has usado, <b>I</b> que está a la izquierda y <b>D</b> que está a la derecha.</p>
+<p class="stats">Una moneda pesa más que las demás. Toca una moneda para cambiarla: el número significa que aún no la has usado, <b>I</b> que está a la izquierda y <b>D</b> que está a la derecha. Las monedas atenuadas ya son auténticas.</p>
 <div class="side"><span>Izquierda (I)</span><span>Derecha (D)</span></div>
 <div class="coins" id="coins"></div>
 <div class="bar">
@@ -43,7 +44,7 @@ button:disabled{opacity:.4;cursor:default}
 const KEY="balanza-lg";
 const $=id=>document.getElementById(id);
 const COINS=[3,9,27], WEIGH=[1,2,3];
-let lvl=2,n,h,marks,left_w,hist,done=false,guessMode=false,timed=false,tmr=null,t=0;
+let lvl=2,n,h,marks,ok,left_w,hist,done=false,guessMode=false,timed=false,tmr=null,t=0;
 
 function wins(){try{return JSON.parse(localStorage.getItem(KEY)||'{"w":0}').w||0}catch(e){return 0}}
 function addWin(){try{localStorage.setItem(KEY,JSON.stringify({w:wins()+1}))}catch(e){}}
@@ -52,7 +53,7 @@ function tick(){$("t").textContent=timed?"⏱ "+t+" s":""}
 function start(){stop();if(!timed){tick();return}t=120;tick();tmr=setInterval(()=>{t--;tick();if(t<=0){stop();done=true;$("msg").textContent="Se acabó el tiempo. La moneda pesada era la "+(h+1)+".";render()}},1000)}
 function newGame(){
   n=COINS[lvl];left_w=WEIGH[lvl];h=Math.floor(Math.random()*n);
-  marks=Array(n).fill(0);hist=[];done=false;guessMode=false;
+  marks=Array(n).fill(0);ok=Array(n).fill(false);hist=[];done=false;guessMode=false;
   $("msg").textContent="";start();render();
 }
 function coinClick(i){
@@ -81,6 +82,9 @@ function weigh(){
     hist.push("Pesada "+num+": pesan lo mismo ("+L+" contra "+R+")");
     $("msg").textContent="Pesan lo mismo: la moneda pesada no está en la balanza.";
   }
+  const mine=marks[h]===1?1:marks[h]===2?2:0;
+  marks.forEach((m,i)=>{if(mine===0?m!==0:m!==mine)ok[i]=true});
+  marks=Array(n).fill(0);
   render();
 }
 function render(){
@@ -94,7 +98,7 @@ function render(){
   $("limpiar").disabled=done;
   $("left").textContent="Pesadas restantes: "+left_w+" de "+WEIGH[lvl]+" · Monedas: "+n+(guessMode?" · Modo adivinar: toca la moneda pesada":"");
   const box=$("coins");box.innerHTML="";
-  marks.forEach((m,i)=>{const b=document.createElement("button");b.className="coin"+(m===1?" L":m===2?" R":"");b.textContent=m===1?"I":m===2?"D":i+1;b.setAttribute("aria-label","Moneda "+(i+1)+(m===1?", a la izquierda":m===2?", a la derecha":", sin usar"));b.disabled=done&&i!==h;b.onclick=()=>coinClick(i);box.appendChild(b)});
+  marks.forEach((m,i)=>{const b=document.createElement("button");b.className="coin"+(m===1?" L":m===2?" R":"")+(ok[i]?" ok":"");b.textContent=m===1?"I":m===2?"D":i+1;b.setAttribute("aria-label","Moneda "+(i+1)+(m===1?", a la izquierda":m===2?", a la derecha":", sin usar"));b.disabled=done&&i!==h;b.onclick=()=>coinClick(i);box.appendChild(b)});
   $("hist").innerHTML=hist.length?hist.map(x=>"<p>"+x+"</p>").join(""):"<p style='color:var(--mute)'>Aún no has pesado nada.</p>";
 }
 $("pesar").onclick=weigh;

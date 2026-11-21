@@ -217,7 +217,7 @@
         "Una moneda pesa más que las demás. Todas las demás pesan lo mismo.",
         "Toca una moneda para cambiarla: el número significa sin usar, I a la izquierda y D a la derecha. Sigue tocándola para cambiarla de nuevo.",
         "Pulsa «Pesar» para ver qué lado pesa más. Hay que poner el mismo número de monedas a cada lado. Si pesan lo mismo, la moneda pesada no está en la balanza.",
-        "Cada pesada gasta una de las que tienes disponibles. Los resultados aparecen en el historial.",
+        "Cada pesada gasta una de las que tienes disponibles. Las monedas atenuadas ya son auténticas, y las marcas se quitan tras cada pesada.",
         "Para dar la respuesta, pulsa «Adivinar» y toca la moneda que crees pesada. Si fallas, puedes seguir probando sin perder nada, y adivinar no gasta pesadas.",
         "Ganas si encuentras la moneda pesada. En contrarreloj tienes 2 minutos."
       ],
