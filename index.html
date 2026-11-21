@@ -1,5 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
 <meta charset="utf-8">
@@ -23,6 +22,7 @@ h2{font-size:1.08rem;margin:0}
 .d{color:var(--mute);font-size:.88rem;margin:2px 0 0}
 .w{font-size:.8rem;color:var(--mute);margin-top:4px}
 .w b{color:var(--ink)}
+h3{font-size:1.1rem;margin:28px 0 10px;color:var(--mute);font-weight:normal;letter-spacing:.02em}
 footer{color:var(--mute);font-size:.85rem;margin-top:22px}
 </style>
 </head>
@@ -30,11 +30,19 @@ footer{color:var(--mute);font-size:.85rem;margin-top:22px}
 <main>
 <h1>Juegos de lógica</h1>
 <p class="sub">Elige un juego para ejercitar la mente. Todos tienen tres niveles y modo contrarreloj.</p>
+<h3>Lógica y matemáticas</h3>
+<div class="list" id="list-lm"></div>
+<h3>Puzles</h3>
 <div class="list" id="list"></div>
 <footer>Las partidas ganadas se guardan en este navegador.</footer>
 </main>
 <script>
 const G=[
+  {f:"cuadrado-magico.html",k:"cuadrado-magico-lg",n:"Cuadrado mágico",d:"Rellena el 3×3 para que todas las sumas den 15.",i:"✨",c:"#f3e7fb",s:"lm"},
+  {f:"caballeros-mentirosos.html",k:"caballeros-lg",n:"Caballeros y mentirosos",d:"Averigua quién dice la verdad a partir de sus frases.",i:"🤥",c:"#e3f0f5",s:"lm"},
+  {f:"balanza.html",k:"balanza-lg",n:"Balanza",d:"Encuentra la moneda pesada con el mínimo de pesadas.",i:"⚖️",c:"#f7efd9",s:"lm"},
+  {f:"calculo-contrarreloj.html",k:"calculo-lg",n:"Cálculo contrarreloj",d:"Diez operaciones mentales en 60 segundos.",i:"➗",c:"#e6f3e6",s:"lm"},
+  {f:"fracciones-orden.html",k:"fracciones-lg",n:"Fracciones en orden",d:"Ordena las fracciones de menor a mayor.",i:"🍕",c:"#fbe6d8",s:"lm"},
   {f:"codigo-secreto.html",k:"codigo-secreto",n:"Código secreto",d:"Deduce la combinación de colores.",i:"🎯",c:"#fde2e4"},
   {f:"sudoku.html",k:"sudoku-lg",n:"Sudoku",d:"Rellena la cuadrícula del 1 al 9.",i:"🔢",c:"#e2ecfd"},
   {f:"apagar-luces.html",k:"apagar-luces",n:"Apagar luces",d:"Deja todas las luces apagadas.",i:"💡",c:"#fdf3c9"},
@@ -51,16 +59,13 @@ const G=[
   {f:"cadena-rota.html",k:"cadena-rota-lg",n:"Cadena rota",d:"Encuentra el número que rompe el patrón.",i:"🔍",c:"#dfe6f1"},
   {f:"letras-zen.html",k:"letras-zen",n:"Letras Zen",d:"Encuentra las palabras ocultas en la rueda.",i:"🔤",c:"#e4eee4"}
 ];
-const list=document.getElementById("list");
 G.forEach(g=>{
   let w=0;
   try{const s=JSON.parse(localStorage.getItem(g.k)||"null");if(s&&s.w)w=s.w}catch(e){}
   const a=document.createElement("a");a.className="g";a.href=g.f;
   a.innerHTML='<div class="ic" style="background:'+g.c+'">'+g.i+'</div><div><h2>'+g.n+'</h2><p class="d">'+g.d+'</p><div class="w">Ganadas: <b>'+w+'</b></div></div>';
-  list.appendChild(a);
+  document.getElementById(g.s==="lm"?"list-lm":"list").appendChild(a);
 });
 </script>
 </body>
 </html>
-
-</body></html>
