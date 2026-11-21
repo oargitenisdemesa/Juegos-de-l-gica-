@@ -102,7 +102,7 @@ function Marco(cfg){
 }
 </script>
 <script>
-const D=[[8,4,6],[10,5,3],[12,6,1]];
+const D=[[10,5,4],[12,6,2],[14,6,0]];
 const COL=["#e4572e","#f3a712","#29a39a","#3d7dca","#8e5bd1","#e0457b"];
 const SIM=["●","▲","■","◆","★","✚"];
 let n,K,g,mov,max;
@@ -160,7 +160,7 @@ function montarPaleta(){
 
 const M=Marco({
   key:"inundacion-lg",
-  limites:[120,240,420],
+  limites:[150,300,480],
   nuevo(l,m){
     let holgura;
     [n,K,holgura]=D[l];

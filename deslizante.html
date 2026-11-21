@@ -99,7 +99,7 @@ function Marco(cfg){
 }
 </script>
 <script>
-const N=[3,4,5];
+const N=[4,5,6];
 let n,a,b,mov;
 const board=$("#board");
 
@@ -143,7 +143,7 @@ function mover(i){
 
 const M=Marco({
   key:"deslizante-lg",
-  limites:[120,300,600],
+  limites:[300,480,900],
   nuevo(l){n=N[l];mov=0;mezclar();pintar()}
 });
 

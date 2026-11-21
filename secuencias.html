@@ -46,7 +46,7 @@ input[type=text]{width:120px;font:bold 1.3rem Georgia,serif;text-align:center;pa
 <main>
 <div class="top"><a href="index.html">← Juegos</a><span>Ganadas: <b id="wins">0</b></span></div>
 <h1>Secuencias</h1>
-<p class="sub">Descubre la regla y escribe el número que sigue. Acierta 8 secuencias antes de perder las 3 vidas.</p>
+<p class="sub">Descubre la regla y escribe el número que sigue. Acierta 10 secuencias antes de perder las 3 vidas.</p>
 <div class="ctl">
   <div class="seg" id="lv"><button aria-pressed="true">Fácil</button><button aria-pressed="false">Medio</button><button aria-pressed="false">Difícil</button></div>
   <label><input type="checkbox" id="ct"> Contrarreloj</label>
@@ -110,7 +110,7 @@ function Marco(cfg){
 }
 </script>
 <script>
-const TOTAL=8;
+const TOTAL=10;
 let idx,vidas,preg;
 const seq=$("#seq"),resp=$("#resp"),fb=$("#fb");
 
@@ -132,7 +132,7 @@ const POOL=[[G.arit,G.desc,G.alt],[G.geo,G.cuad,G.dif,G.inter],[G.fib,G.cubos,G.
 
 function siguiente(l){
   const f=POOL[l][rnd(0,POOL[l].length-1)];
-  const [s,regla]=f(l===0?6:7);
+  const [s,regla]=f(l===0?5:6);
   preg={resp:s[s.length-1],regla};
   seq.innerHTML=s.slice(0,-1).map(v=>'<span class="n">'+v+"</span>").join("")+'<span class="n i">?</span>';
   resp.value="";resp.focus();
@@ -144,7 +144,7 @@ function info(){
 
 const M=Marco({
   key:"secuencias-lg",
-  limites:[150,240,360],
+  limites:[120,180,300],
   nuevo(l,m){idx=0;vidas=3;fb.textContent="";m.iniciarReloj();siguiente(l)}
 });
 

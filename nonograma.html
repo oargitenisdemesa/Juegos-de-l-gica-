@@ -106,7 +106,7 @@ function Marco(cfg){
 }
 </script>
 <script>
-const S=[5,8,10];
+const S=[7,10,12];
 let n,sol,cur,pf,pc,modo=1,val=0,arrastre=false,celdas=[],clF=[],clC=[];
 const board=$("#board");
 
@@ -160,7 +160,7 @@ function comprobar(){
 
 const M=Marco({
   key:"nonograma-lg",
-  limites:[180,480,900],
+  limites:[150,420,780],
   nuevo(l){n=S[l];nuevoTablero()}
 });
 

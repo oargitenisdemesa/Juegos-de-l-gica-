@@ -194,9 +194,9 @@ PUZ=PUZ.filter(function(p){
 });
 
 var LV={
-  facil:{twist:false,thermo:true,clock:240,d:"La regla no cambia. Ves el termómetro y el «más cerca / más lejos»."},
-  medio:{twist:true,thermo:true,clock:180,d:"La regla cambia en silencio cuando aciertas 3 elementos."},
-  dificil:{twist:true,thermo:false,clock:120,d:"Como medio, pero sin termómetro ni «más cerca / más lejos»: solo el número de aciertos."}
+  facil:{twist:true,thermo:true,clock:180,d:"La regla cambia en silencio cuando aciertas 3 elementos. Ves el termómetro y el «más cerca / más lejos»."},
+  medio:{twist:true,thermo:false,clock:120,d:"La regla cambia en silencio cuando aciertas 3 elementos. Sin termómetro: solo el número de aciertos."},
+  dificil:{twist:true,thermo:false,clock:90,d:"Como medio, con 90 segundos en contrarreloj."}
 };
 var MAXD=18,KEY="dilema-orden-lg";
 function load(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return {}}}

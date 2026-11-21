@@ -13,7 +13,7 @@
         "Ganas si aciertas el código. Si se acaban los intentos (o el tiempo, en contrarreloj), pierdes y se muestra la solución."
       ],
       ejemplo: "Código oculto: 1-2-3-4. Pruebas 1-1-2-5. Resultado: una bolita negra (el 1 de la primera casilla está bien) y una blanca (el 2 está en el código, pero no en la tercera casilla).",
-      niveles: "Fácil: 4 fichas y los colores no se repiten. Medio: 4 fichas y los colores pueden repetirse. Difícil: 5 fichas y 8 colores."
+      niveles: "Fácil: 4 fichas de 7 colores, sin repetir, y 8 intentos. Medio: 5 fichas con repetición, y 9 intentos. Difícil: 6 fichas, 8 colores y 10 intentos."
     },
     "sudoku": {
       titulo: "Sudoku",
@@ -38,7 +38,7 @@
         "«Deshacer» anula tu último movimiento y «Reiniciar» vuelve al tablero del principio. «Pista» marca con borde discontinuo una casilla que te acerca a la solución (3 por partida)."
       ],
       ejemplo: "Truco para tableros grandes: ve fila por fila de arriba abajo. Para apagar una luz de arriba, pulsa la casilla que tiene justo debajo.",
-      niveles: "Fácil: 4×4. Medio: 5×5. Difícil: 6×6. Todos los tableros se pueden resolver."
+      niveles: "Fácil: 5×5. Medio: 6×6. Difícil: 7×7. Todos los tableros se pueden resolver."
     },
     "torres-de-hanoi": {
       titulo: "Torres de Hanói",
@@ -47,10 +47,10 @@
         "Toca una torre para coger su disco de arriba y toca otra torre para soltarlo allí. Si te arrepientes, toca la misma torre otra vez.",
         "Solo puedes mover un disco cada vez.",
         "Un disco grande nunca puede colocarse encima de uno más pequeño.",
-        "El contador te dice cuántos movimientos llevas y cuál es el mínimo posible. Con 3 discos son 7, con 5 son 31 y con 7 son 127."
+        "El contador te dice cuántos movimientos llevas y cuál es el mínimo posible. Con 4 discos son 15, con 6 son 63 y con 8 son 255."
       ],
       ejemplo: "Con 3 discos: mueve el pequeño a la torre derecha, el mediano a la central, el pequeño sobre el mediano, y así hasta pasar el grande a su sitio.",
-      niveles: "Fácil: 3 discos. Medio: 5 discos. Difícil: 7 discos. Truco: el disco más pequeño se mueve cada dos turnos, siempre en la misma dirección."
+      niveles: "Fácil: 4 discos. Medio: 6 discos. Difícil: 8 discos. Truco: el disco más pequeño se mueve cada dos turnos, siempre en la misma dirección."
     },
     "parejas": {
       titulo: "Parejas",
@@ -62,7 +62,7 @@
         "Ganas cuando has encontrado todas las parejas. Cuantos menos intentos uses, mejor récord."
       ],
       ejemplo: "Si destapas 🌙 y 🍎 y no coinciden, apunta mentalmente dónde estaban: cuando salga otro 🌙 sabrás dónde está su pareja.",
-      niveles: "Fácil: 12 cartas. Medio: 16 cartas. Difícil: 24 cartas. En contrarreloj, si se acaba el tiempo pierdes."
+      niveles: "Fácil: 16 cartas. Medio: 20 cartas. Difícil: 24 cartas. En contrarreloj, si se acaba el tiempo pierdes."
     },
     "deslizante": {
       titulo: "Puzle deslizante",
@@ -74,7 +74,7 @@
         "Debajo del título ves cuántos movimientos llevas. Ganas cuando todas las fichas están en orden."
       ],
       ejemplo: "Truco: no intentes colocar la última ficha de una fila directamente. Déjala una fila más abajo, cierra la fila con las demás y vuélvela a subir.",
-      niveles: "Fácil: 3×3 (2 minutos en contrarreloj). Medio: 4×4 (5 minutos). Difícil: 5×5 (10 minutos). El tablero siempre se puede resolver."
+      niveles: "Fácil: 4×4 (5 minutos en contrarreloj). Medio: 5×5 (8 minutos). Difícil: 6×6 (15 minutos). El tablero siempre se puede resolver."
     },
     "buscaminas": {
       titulo: "Buscaminas",
@@ -87,7 +87,7 @@
         "Arriba ves cuántas minas quedan por marcar. Si destapas una mina, pierdes."
       ],
       ejemplo: "Si un 1 solo tiene una casilla tapada a su alrededor, esa casilla es una mina. Si ya la has marcado, el resto de vecinas de ese 1 son seguras.",
-      niveles: "Fácil: 8×8 con 8 minas (3 minutos en contrarreloj). Medio: 10×10 con 15 (7 minutos). Difícil: 12×12 con 30 (15 minutos). El reloj empieza al destapar la primera casilla."
+      niveles: "Fácil: 10×10 con 14 minas (2:30 en contrarreloj). Medio: 12×12 con 24 (6 minutos). Difícil: 16×16 con 50 (12 minutos). El reloj empieza al destapar la primera casilla."
     },
     "nonograma": {
       titulo: "Nonograma",
@@ -100,7 +100,7 @@
         "Ganas cuando todas las filas y columnas cumplen sus pistas."
       ],
       ejemplo: "En una fila de 5 casillas, la pista «5» se rellena entera. Con la pista «4», las 3 casillas del centro seguro están rellenas. Con «0» toda la fila está vacía.",
-      niveles: "Fácil: 5×5 (3 minutos en contrarreloj). Medio: 8×8 (8 minutos). Difícil: 10×10 (15 minutos). El reloj empieza con tu primer toque."
+      niveles: "Fácil: 7×7 (2:30 en contrarreloj). Medio: 10×10 (7 minutos). Difícil: 12×12 (13 minutos). El reloj empieza con tu primer toque."
     },
     "secuencias": {
       titulo: "Secuencias",
@@ -109,10 +109,10 @@
         "Mira los números y piensa cómo pasa de uno al siguiente: sumas, restas, multiplicaciones, cuadrados, saltos que crecen o dos series mezcladas.",
         "Escribe el número que sustituye al «?» y pulsa «Comprobar» (o Intro).",
         "Si aciertas, pasas a la siguiente serie. Si fallas, pierdes una vida ❤️ y se te enseña la regla para que aprendas.",
-        "Ganas si resuelves 8 series. Pierdes si te quedas sin las 3 vidas."
+        "Ganas si resuelves 10 series. Pierdes si te quedas sin las 3 vidas."
       ],
       ejemplo: "Serie 2, 4, 8, 16, ?: cada número es el doble del anterior, así que sigue el 32. Serie 1, 4, 9, 16, ?: son cuadrados (1², 2², 3², 4²), sigue el 25.",
-      niveles: "Fácil: sumas y restas, con 5 números a la vista. Medio: multiplicaciones, cuadrados, saltos crecientes y series entrelazadas. Difícil: tipo Fibonacci, cubos, triangulares y combinaciones de operaciones. En contrarreloj el tiempo es para las 8 series: 2:30, 4:00 y 6:00 minutos."
+      niveles: "Fácil: sumas y restas, con 4 números a la vista. Medio: multiplicaciones, cuadrados, saltos crecientes y series entrelazadas. Difícil: tipo Fibonacci, cubos, triangulares y combinaciones de operaciones. En contrarreloj el tiempo es para las 10 series: 2:00, 3:00 y 5:00 minutos."
     },
     "inundacion": {
       titulo: "Inundación",
@@ -124,7 +124,7 @@
         "Arriba ves los movimientos usados y el máximo permitido. Si llegas al máximo sin haber terminado, pierdes."
       ],
       ejemplo: "Una buena norma es elegir el color que absorbe más casillas de golpe. Mejor aún si te acerca a los rincones lejanos, porque son los más difíciles de alcanzar al final.",
-      niveles: "Fácil: 8×8 con 4 colores y mucho margen de movimientos (2 minutos en contrarreloj). Medio: 10×10 con 5 colores (4 minutos). Difícil: 12×12 con 6 colores y muy poco margen (7 minutos). Siempre hay al menos una forma de ganar dentro del límite."
+      niveles: "Fácil: 10×10 con 5 colores y algo de margen (2:30 en contrarreloj). Medio: 12×12 con 6 colores y poco margen (5 minutos). Difícil: 14×14 con 6 colores y sin margen (8 minutos). Siempre hay al menos una forma de ganar dentro del límite."
     },
     "cadena-de-palabras": {
       titulo: "Cadena de palabras",
@@ -133,13 +133,13 @@
         "Arriba ves la letra del día. La primera palabra tiene que empezar por ella.",
         "Escribe tu palabra y pulsa «OK» (o Intro). Si cumple las reglas, pasa al siguiente eslabón de la cadena. Si no, te dice qué falla y puedes probar otra.",
         "Cada palabra empieza por la última letra de la anterior. Si acaba en K, W, X, Y, Z, Ñ, Q o J, la siguiente empieza por la letra anterior que sí se pueda encadenar.",
-        "Las reglas se acumulan. Desde el eslabón 3 la palabra debe <b>contener la letra A</b>. Desde el 4 debe tener <b>al menos 7 letras</b>. En los niveles medio y difícil, el eslabón 5 (y el 7 en difícil) tiene que ser un <b>sustantivo abstracto</b>, como libertad o esperanza.",
+        "Las reglas se acumulan. Desde el eslabón 3 la palabra debe <b>contener la letra A</b>. El 4 y el 5 necesitan <b>al menos 7 letras</b>, el 6 al menos 8, el 7 al menos 9 y el 8 al menos 10. Los eslabones 5, 7 y 8 tienen que ser <b>sustantivos abstractos</b>, como libertad o esperanza.",
         "Las palabras que no están en el diccionario básico del juego se comprueban en el Wiktionary en español. Si no hay conexión, se aceptan cuando parecen españolas. Puedes escribir con o sin tildes.",
         "«Pista» te enseña las dos primeras letras de una palabra válida y resta 3 puntos.",
         "Ganas si completas toda la cadena. Si se acaba el tiempo, pierdes. Cada palabra da un punto por letra, 2 más si está en el diccionario básico y 5 más si tiene 10 letras o más. Al terminar, cada segundo que sobre suma un punto."
       ],
       ejemplo: "Letra del día C, nivel fácil: <b>casa</b> (acaba en A) → <b>amor</b> (empieza por A, acaba en R) → <b>rana</b> (empieza por R y contiene A) → <b>aventura</b> (empieza por A y tiene 8 letras).",
-      niveles: "Fácil: 4 eslabones y 120 segundos. Medio: 5 eslabones y 90 segundos. Difícil: 7 eslabones y 90 segundos, con palabras cada vez más largas. El reto del día es siempre de nivel medio, y tu racha sube un día cada vez que lo completas sin ningún error."
+      niveles: "Fácil: 5 eslabones y 100 segundos. Medio: 6 eslabones y 90 segundos. Difícil: 8 eslabones y 80 segundos, con palabras cada vez más largas. El reto del día es siempre de nivel medio, y tu racha sube un día cada vez que lo completas sin ningún error."
     },
     "dilema-del-orden": {
       titulo: "Dilema del orden",
@@ -148,12 +148,12 @@
         "Arrastra cada elemento por el agarrador ⋮⋮ (o usa las flechas ▲ y ▼) hasta ponerlos en el orden que crees correcto.",
         "Pulsa «Comprobar». Te dice cuántos elementos están en su sitio y, respecto al intento anterior, si estás <b>más cerca</b> o <b>más lejos</b>. El termómetro va de frío a caliente.",
         "Nadie te dice la regla: puede ser el orden alfabético, el tamaño, la fecha, el orden lógico de un proceso... Tienes que deducirla probando. No hay penalización por intentos, pero el reloj corre.",
-        "Con el <b>criterio cambiante</b> (niveles medio y difícil), cuando aciertas 3 elementos la regla cambia en silencio. Si de pronto tus aciertos se hunden, piensa que la regla puede haber cambiado y vuelve a ordenar.",
+        "Con el <b>criterio cambiante</b> (en todos los niveles), cuando aciertas 3 elementos la regla cambia en silencio. Si de pronto tus aciertos se hunden, piensa que la regla puede haber cambiado y vuelve a ordenar.",
         "En el modo <b>Orden inverso</b> el orden correcto ya está casi hecho, pero un elemento está fuera de su sitio a propósito. Encuentra cuál es y colócalo donde toca.",
         "Ganas cuando los 6 elementos están en su sitio. Al terminar (o si te rindes) se muestran la regla y el orden final."
       ],
       ejemplo: "Con Perro, Saturno, Cebolla, Marte, Gato y Júpiter, una regla posible es «animales, luego planetas, luego verduras, y alfabético dentro de cada grupo»: Gato, Perro, Júpiter, Marte, Saturno, Cebolla. Otra sería el orden alfabético simple. El marcador te dirá cuál se acerca más.",
-      niveles: "Fácil: la regla no cambia. Medio: la regla cambia cuando aciertas 3. Difícil: igual que medio, pero sin «más cerca / más lejos» ni termómetro, solo el número de aciertos. Con contrarreloj tienes 4 minutos (fácil), 3 (medio) o 2 (difícil), y si se acaban pierdes. El reto del día es siempre de nivel medio y sin límite de tiempo."
+      niveles: "Fácil: la regla cambia cuando aciertas 3, y ves el termómetro. Medio: igual, sin termómetro. Difícil: igual que medio, con 90 segundos en contrarreloj. Con contrarreloj tienes 3 minutos (fácil), 2 (medio) o 1:30 (difícil), y si se acaban pierdes. El reto del día es siempre de nivel medio y sin límite de tiempo."
     },
     "numeros-que-hablan": {
       titulo: "Números que hablan",
@@ -168,7 +168,7 @@
         "En el modo <b>Código inverso</b> te dan los valores de los símbolos y tú construyes una ecuación verdadera, con al menos dos símbolos distintos, eligiendo las piezas en los desplegables."
       ],
       ejemplo: "Con 🍎 + 🍎 = 🍌 y 🍌 + 🍎 = 9: si 🍎 vale 3, entonces 🍌 vale 6, y 6 + 3 = 9 cuadra. Empieza siempre por la ecuación con menos símbolos desconocidos y ve despejando el resto.",
-      niveles: "Fácil: 2 símbolos, solo sumas y restas. Medio: 3 símbolos, con multiplicaciones. Difícil: 4 símbolos, resultados de hasta 99, algunos códigos con gemelos y los códigos 3 y 6 con símbolos traicioneros. Contrarreloj: 20 segundos por código (25 en el código inverso). El reto del día es de nivel medio y sin tiempo, y tu racha sube un día cada vez que lo completas sin ningún error."
+      niveles: "Fácil: 3 símbolos, solo sumas y restas. Medio: 4 símbolos, con multiplicaciones. Difícil: 5 símbolos, resultados de hasta 99, algunos códigos con gemelos y algunos con símbolos traicioneros. Contrarreloj: 20 segundos por código (25 en el código inverso). El reto del día es de nivel medio y sin tiempo, y tu racha sube un día cada vez que lo completas sin ningún error."
     },
     "cadena-rota": {
       titulo: "Cadena rota",
@@ -182,7 +182,7 @@
         "En el modo <b>Patrón inverso</b> te dan la secuencia correcta, tocas un número y escribes el intruso que lo sustituya. Vale si queda un único intruso claro. Si tu número se parece mucho al original, ganas 10 puntos extra por sutil."
       ],
       ejemplo: "2 · 4 · 6 · 9 · 10 · 12 · 14: todos van de 2 en 2, así que sobra el 9 (debería ser 8).",
-      niveles: "Fácil: 6 o 7 números con sumas, multiplicaciones y múltiplos. Medio: 7 u 8 números, con saltos crecientes, cuadrados, primos, Fibonacci, series mezcladas y propiedades de las cifras. Difícil: 8 números, con cubos y patrones más raros, y tres de las ocho cadenas tienen dos intrusos. Contrarreloj: 12 segundos por cadena (25 si hay dos intrusos o en patrón inverso), y tras varios aciertos seguidos el tiempo baja hasta 3 segundos. El reto del día es de nivel medio y sin tiempo, y tu racha sube un día cada vez que lo completas sin ningún error."
+      niveles: "Fácil: 7 u 8 números con sumas, multiplicaciones y múltiplos. Medio: 8 números, con saltos crecientes, cuadrados, primos, Fibonacci, series mezcladas y propiedades de las cifras. Difícil: 8 números, con cubos y patrones más raros, y tres de las ocho cadenas tienen dos intrusos. Contrarreloj: 10 segundos por cadena (20 si hay dos intrusos o en patrón inverso), y tras varios aciertos seguidos el tiempo baja hasta 3 segundos. El reto del día es de nivel medio y sin tiempo, y tu racha sube un día cada vez que lo completas sin ningún error."
     },
     "cuadrado-magico": {
       titulo: "Cuadrado mágico",
@@ -195,20 +195,20 @@
         "Ganas cuando las tres filas, las tres columnas y las dos diagonales suman 15. En contrarreloj tienes 2 minutos."
       ],
       ejemplo: "En cualquier cuadrado mágico de este tipo el 5 está en el centro. Las casillas opuestas respecto al centro suman 10: por ejemplo, el 2 y el 8, o el 4 y el 6.",
-      niveles: "Fácil: 6 casillas dadas. Medio: 5 casillas dadas. Difícil: 4 casillas dadas. En contrarreloj, si se acaban los 2 minutos, pierdes."
+      niveles: "Fácil: 4 casillas dadas. Medio: 3 casillas dadas. Difícil: 2 casillas dadas. En contrarreloj, si se acaban los 2 minutos, pierdes."
     },
     "caballeros-mentirosos": {
       titulo: "Caballeros y mentirosos",
       objetivo: "Averiguar quién dice la verdad y quién miente a partir de lo que afirma cada persona.",
       pasos: [
-        "Hay varias personas (Ana, Beto, Carla y Dani). Los caballeros siempre dicen la verdad y los mentirosos siempre mienten.",
+        "Hay varias personas (Ana, Beto, Carla, Dani y Eva). Los caballeros siempre dicen la verdad y los mentirosos siempre mienten.",
         "Cada persona hace una afirmación sobre otra: «X es caballero» o «X es mentiroso».",
         "Ana ya viene marcada como dato del enigma. Para cada una de las demás, marca si es Caballero o Mentiroso. Si vuelves a pulsar la misma opción, se quita la marca.",
         "Cuando las hayas marcado todas, pulsa «Comprobar». Si alguna afirmación no encaja con tus respuestas, el juego te lo dice.",
         "Ganas cuando tus respuestas son coherentes con todas las afirmaciones. Para resolverlo, prueba suposiciones y mira si se contradicen."
       ],
       ejemplo: "Ana dice: «Beto es mentiroso». Si Ana es caballero, Beto es mentiroso. Si Ana es mentirosa, Beto es caballero. Hay que mirar el resto de afirmaciones para saber cuál de las dos cosas es cierta.",
-      niveles: "Fácil: 2 personas. Medio: 3 personas. Difícil: 4 personas. Cada enigma tiene una única solución. En contrarreloj tienes 2 minutos."
+      niveles: "Fácil: 3 personas. Medio: 4 personas. Difícil: 5 personas. Cada enigma tiene una única solución, y Ana siempre viene marcada como dato. En contrarreloj tienes 2 minutos."
     },
     "balanza": {
       titulo: "Balanza",
@@ -222,7 +222,7 @@
         "Ganas si encuentras la moneda pesada. En contrarreloj tienes 2 minutos."
       ],
       ejemplo: "Con 3 monedas y una sola pesada: pon la 1 a la izquierda y la 2 a la derecha. Si la izquierda pesa más, es la 1; si pesa más la derecha, es la 2; si pesan lo mismo, es la 3.",
-      niveles: "Fácil: 3 monedas y 1 pesada. Medio: 9 monedas y 2 pesadas. Difícil: 27 monedas y 3 pesadas. Cada pesada permite dividir el grupo en tres partes, por eso 3 pesadas bastan para 27 monedas."
+      niveles: "Fácil: 9 monedas y 2 pesadas. Medio: 27 monedas y 3 pesadas. Difícil: 81 monedas y 4 pesadas. Cada pesada divide el grupo en tres partes, así que 2 pesadas bastan para 9 monedas, 3 para 27 y 4 para 81. En contrarreloj tienes 2 minutos."
     },
     "calculo-contrarreloj": {
       titulo: "Cálculo contrarreloj",
@@ -231,11 +231,11 @@
         "Pulsa «Empezar». Aparece una operación: escribe el resultado en la casilla.",
         "Responde con «Responder» o pulsando Intro. Te dirá si era correcto y, si no, cuál era el resultado.",
         "Pasa automáticamente a la siguiente operación. El contador muestra los segundos que te quedan.",
-        "Ganas la ronda si aciertas 8 o más de las 10. Si se acaba el tiempo, la ronda termina y no cuenta como ganada, aunque tengas 8 aciertos.",
+        "Ganas la ronda si aciertas 9 o más de las 10. Si se acaba el tiempo, la ronda termina y no cuenta como ganada, aunque tengas 9 aciertos.",
         "Puedes pulsar «Reiniciar» en cualquier momento para empezar otra ronda."
       ],
       ejemplo: "Para calcular 17 × 12 puedes hacer 17 × 10 = 170 y 17 × 2 = 34, y sumar: 204. Para el 20 % de un número, basta con dividirlo entre 5.",
-      niveles: "Fácil: sumas y restas hasta 20. Medio: multiplicaciones hasta 12 × 12, divisiones exactas y sumas de dos cifras. Difícil: multiplicaciones de dos cifras por una, divisiones, operaciones con paréntesis y el 20 % de un número."
+      niveles: "Fácil: sumas y restas hasta 50. Medio: multiplicaciones hasta 15 × 15, divisiones exactas y sumas de dos cifras. Difícil: multiplicaciones de dos cifras (desde 13) por una cifra (desde 3), divisiones, operaciones con paréntesis y el 20 % de un número."
     },
     "fracciones-orden": {
       titulo: "Fracciones en orden",
@@ -249,7 +249,7 @@
         "Ganas si el orden es correcto. En contrarreloj tienes 1 minuto; si se acaba, se muestra el orden correcto."
       ],
       ejemplo: "Si dos fracciones tienen el mismo denominador, la que tiene el numerador más grande es la mayor. Para comparar 3/4 y 5/6, pásalas a un denominador común: 9/12 y 10/12. Como 9 es menor que 10, 3/4 es menor que 5/6.",
-      niveles: "Fácil: 3 fracciones con denominadores 2, 3, 4 o 6. Medio: 4 fracciones con denominadores 4, 5, 6 u 8. Difícil: 5 fracciones con denominadores 6, 8, 10 o 12."
+      niveles: "Fácil: 4 fracciones con denominadores 3, 4, 6 u 8. Medio: 5 fracciones con denominadores entre 5 y 10. Difícil: 6 fracciones con denominadores 8, 10, 12, 14 o 15."
     },
     "letras-zen": {
       titulo: "Letras Zen",
@@ -263,7 +263,7 @@
         "Cuando encuentras todas las palabras aparece la enhorabuena. «Nueva ronda» genera otro tablero."
       ],
       ejemplo: "Con las letras A, M, O, R, S y E puedes formar MARES: arrastra M, A, R, E y S en ese orden.",
-      niveles: "Fácil, Medio y Difícil: la palabra base tiene 5, 6 o 7 letras, y el tablero incluye todas las palabras que se pueden formar con sus letras. No hay tiempo. «Zen» muestra la primera letra de cada palabra; «Pistas» desvela hasta 6 letras al azar."
+      niveles: "Fácil: palabra base de 6 letras. Medio: 7 letras. Difícil: 8 letras y solo 3 pistas. En todos los niveles el tablero incluye todas las palabras que se pueden formar con sus letras. No hay tiempo. «Zen» muestra la primera letra de cada palabra; «Pistas» desvela letras al azar."
     }
   };
 

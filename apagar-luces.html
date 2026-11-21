@@ -39,9 +39,9 @@ button:disabled{opacity:.4;cursor:default}
 <p class="sub">Apaga todas las luces. Cada pulsación cambia la luz y sus cuatro vecinas.</p>
 <div class="bar">
   <select id="lvl" aria-label="Nivel">
-    <option value="0">Fácil · 4×4</option>
-    <option value="1" selected>Medio · 5×5</option>
-    <option value="2">Difícil · 6×6</option>
+    <option value="0">Fácil · 5×5</option>
+    <option value="1" selected>Medio · 6×6</option>
+    <option value="2">Difícil · 7×7</option>
   </select>
   <label class="chk"><input type="checkbox" id="rel"> Contrarreloj</label>
   <button id="new">Nueva partida</button>
@@ -65,7 +65,7 @@ La pista marca una casilla que te acerca a la solución.</p>
 </main>
 <script>
 const $=id=>document.getElementById(id);
-const LV=[{n:4,secs:90},{n:5,secs:150},{n:6,secs:240}];
+const LV=[{n:5,secs:90},{n:6,secs:150},{n:7,secs:240}];
 let n,secs,board,start,sol,hist,hints,over,tick,hintCell;
 let st={w:0,l:0,best:{}};
 try{const s=JSON.parse(localStorage.getItem("apagar-luces")||"null");if(s)st=Object.assign(st,s)}catch(e){}

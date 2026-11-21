@@ -150,9 +150,9 @@ ABS.forEach(function(w){ABSSET[w]=1;COMMONSET[w]=1});
 var ABSRE=/(dad|cion|sion|eza|ismo|encia|ancia|tud|miento|anza|ura|ia|ez)$/;
 var BAD="kwxyñqzj",SEEDS="cmpstdrlbfgnv".split("");
 var LV={
-  facil:{n:4,dur:120,d:"4 eslabones y 120 segundos."},
-  medio:{n:5,dur:90,d:"5 eslabones y 90 segundos."},
-  dificil:{n:7,dur:90,d:"7 eslabones y 90 segundos, con palabras cada vez más largas."}
+  facil:{n:5,dur:100,d:"5 eslabones y 100 segundos."},
+  medio:{n:6,dur:90,d:"6 eslabones y 90 segundos."},
+  dificil:{n:8,dur:80,d:"8 eslabones y 80 segundos, con palabras cada vez más largas."}
 };
 var $=function(i){return document.getElementById(i)};
 var KEY="cadena-palabras-lg";
@@ -174,7 +174,8 @@ function ruleFor(i){
   if(i===3||i===4)r.min=7;
   if(i===5)r.min=8;
   if(i===6)r.min=9;
-  r.abs=(i===4||i===6);
+  if(i===7)r.min=10;
+  r.abs=(i===4||i===6||i===7);
   return r;
 }
 function startLetterFor(i){return i===0?st.seed:nextLetter(st.words[i-1])}

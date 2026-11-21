@@ -49,9 +49,9 @@ button:disabled{opacity:.4;cursor:default}
 <h1>Sudoku</h1>
 <div class="bar">
   <select id="lvl" aria-label="Nivel">
-    <option value="38">Fácil</option>
-    <option value="31" selected>Medio</option>
-    <option value="26">Difícil</option>
+    <option value="34">Fácil</option>
+    <option value="27" selected>Medio</option>
+    <option value="22">Difícil</option>
   </select>
   <label class="chk"><input type="checkbox" id="rel"> Contrarreloj</label>
   <button id="new">Nueva partida</button>
@@ -105,7 +105,7 @@ function newGame(){
   clearInterval(tick);
   const g=make(+$("lvl").value);
   sol=g.s;giv=g.p.map(x=>x>0);val=[...g.p];notes=Array.from({length:81},()=>new Set());
-  sel=-1;over=false;noteMode=false;hints=3;errs=0;secs=$("rel").checked?(+$("lvl").value>=38?900:+$("lvl").value>=31?1200:1500):0;
+  sel=-1;over=false;noteMode=false;hints=3;errs=0;secs=$("rel").checked?(+$("lvl").value>=34?900:+$("lvl").value>=27?1200:1500):0;
   $("note").classList.remove("on");$("hc").textContent=3;$("msg").textContent="";$("msg").className="";
   setBtn(false);
   $("tl").textContent=$("rel").checked?"restante":"tiempo";

@@ -37,8 +37,8 @@ select,button{font:inherit;color:var(--ink);background:var(--panel);border:1.5px
 <p class="sub">Encuentra todas las parejas de símbolos iguales.</p>
 <div class="bar">
   <select id="lvl" aria-label="Nivel">
-    <option value="0">Fácil · 12 cartas</option>
-    <option value="1" selected>Medio · 16 cartas</option>
+    <option value="0">Fácil · 16 cartas</option>
+    <option value="1" selected>Medio · 20 cartas</option>
     <option value="2">Difícil · 24 cartas</option>
   </select>
   <label class="chk"><input type="checkbox" id="rel"> Contrarreloj</label>
@@ -59,7 +59,7 @@ Gana quien las encuentre todas con menos intentos (el récord es el menor númer
 <script>
 const $=id=>document.getElementById(id);
 const SYM=["🍎","🌙","⭐","🐟","🔔","🌵","🎲","🍄","🦋","🔑","🌊","🎈"];
-const LV=[{p:6,c:3,s:60},{p:8,c:4,s:90},{p:12,c:4,s:150}];
+const LV=[{p:8,c:4,s:60},{p:10,c:4,s:75},{p:12,c:4,s:90}];
 let cards,first,lock,moves,found,secs,tick,over,total;
 let st={w:0,l:0,best:{}};
 try{const s=JSON.parse(localStorage.getItem("parejas-lg")||"null");if(s)st=Object.assign(st,s)}catch(e){}

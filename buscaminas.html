@@ -103,7 +103,7 @@ function Marco(cfg){
 }
 </script>
 <script>
-const D=[[8,8,8],[10,10,15],[12,12,30]];
+const D=[[10,10,14],[12,12,24],[16,16,50]];
 let R,C,K,g,primero,perdida;
 const board=$("#board"),flag=$("#flag");
 
@@ -177,7 +177,7 @@ function bandera(i){
 
 const M=Marco({
   key:"buscaminas-lg",
-  limites:[180,420,900],
+  limites:[150,360,720],
   nuevo(l){
     [R,C,K]=D[l];
     g=Array.from({length:R*C},()=>({m:0,r:0,f:0,n:0,x:0}));
