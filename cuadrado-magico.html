@@ -1,0 +1,80 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cuadrado mágico</title><style>
+:root{--bg:#f4f1ea;--panel:#fffdf8;--ink:#22201c;--mute:#756f64;--line:#d9d2c3;--accent:#22201c}
+@media (prefers-color-scheme:dark){:root{--bg:#151412;--panel:#201e1b;--ink:#efebe2;--mute:#9a9486;--line:#38342d;--accent:#efebe2}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 Georgia,serif;display:flex;justify-content:center}
+main{width:100%;max-width:520px;padding:18px 16px 40px}
+h1{font-size:1.7rem;margin:6px 0 2px}
+.back{color:var(--mute);font-size:.9rem;text-decoration:none}
+.stats{color:var(--mute);font-size:.9rem;margin:4px 0}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;justify-content:center}
+button{font:inherit;padding:8px 14px;border-radius:999px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+button[aria-pressed=true]{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+button:disabled{opacity:.4;cursor:default}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:300px;margin:12px auto}
+.cell{aspect-ratio:1;font:1.8rem Georgia,serif;border-radius:12px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink)}
+.cell.lock{font-weight:bold}
+.cell.sel{border:3px solid var(--accent)}
+.msg{min-height:1.4em;text-align:center;color:var(--mute);margin:8px 0}
+</style></head><body><main>
+<a class="back" href="index.html">← Juegos de lógica</a>
+<h1>Cuadrado mágico</h1>
+<p class="stats" id="st"></p>
+<div class="bar" id="lv"></div>
+<div class="bar"><button id="tm" aria-pressed="false">Contrarreloj</button><button id="nw">Nuevo</button></div>
+<div class="grid" id="grid"></div>
+<div class="bar" id="pad"></div>
+<p class="msg" id="msg"></p>
+<p class="stats" id="t" style="text-align:center"></p>
+<p class="stats" style="text-align:center">Rellena con 1 al 9 sin repetir. Cada fila, columna y diagonal debe sumar 15.</p>
+</main>
+<script>
+const KEY="cuadrado-magico-lg";
+const $=id=>document.getElementById(id);
+const rot=m=>[0,1,2].map(i=>[0,1,2].map(j=>m[2-j][i]));
+const flip=m=>m.map(r=>[...r].reverse());
+const V=[];{let g=[[2,7,6],[9,5,1],[4,3,8]];for(let k=0;k<4;k++){V.push(g,flip(g));g=rot(g)}}
+const GIVEN=[6,5,4];
+let lvl=1,cells,mask,sol,sel=-1,done=false,timed=false,tmr=null,left=0;
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+function ok(m){const f=m.flat();if(new Set(f).size!==9||f.includes(0))return false;const S=[];m.forEach(r=>S.push(r[0]+r[1]+r[2]));for(let i=0;i<3;i++)S.push(m[0][i]+m[1][i]+m[2][i]);S.push(m[0][0]+m[1][1]+m[2][2],m[0][2]+m[1][1]+m[2][0]);return S.every(x=>x===15)}
+const board=()=>[0,1,2].map(r=>[0,1,2].map(c=>cells[r*3+c]));
+function wins(){try{return JSON.parse(localStorage.getItem(KEY)||'{"w":0}').w||0}catch(e){return 0}}
+function addWin(){try{localStorage.setItem(KEY,JSON.stringify({w:wins()+1}))}catch(e){}}
+function stop(){clearInterval(tmr);tmr=null}
+function tick(){$("t").textContent=timed?"⏱ "+left+" s":""}
+function start(){stop();if(!timed){tick();return}left=120;tick();tmr=setInterval(()=>{left--;tick();if(left<=0){stop();done=true;$("msg").textContent="Se acabó el tiempo. Pulsa Nuevo.";render()}},1000)}
+function newGame(){
+  sol=pick(V);
+  const idx=shuffle([0,1,2,3,4,5,6,7,8]);
+  cells=Array(9).fill(0);mask=Array(9).fill(false);
+  idx.slice(0,GIVEN[lvl-1]).forEach(i=>{cells[i]=sol[Math.floor(i/3)][i%3];mask[i]=true});
+  sel=-1;done=false;$("msg").textContent="";start();render();
+}
+function put(n){
+  if(sel<0||done||mask[sel])return;
+  cells[sel]=n;
+  if(cells.every(x=>x)){
+    if(ok(board())){done=true;stop();addWin();$("msg").textContent="¡Cuadrado mágico! Todas las sumas dan 15."}
+    else $("msg").textContent="Aún no cuadra: revisa filas, columnas y diagonales.";
+  } else $("msg").textContent="";
+  render();
+}
+function render(){
+  $("st").textContent="Ganadas: "+wins();
+  $("lv").innerHTML="";
+  ["Fácil","Medio","Difícil"].forEach((t,k)=>{const b=document.createElement("button");b.textContent=t;b.setAttribute("aria-pressed",String(lvl===k+1));b.onclick=()=>{lvl=k+1;newGame()};$("lv").appendChild(b)});
+  $("tm").setAttribute("aria-pressed",String(timed));
+  $("grid").innerHTML="";
+  cells.forEach((v,i)=>{const b=document.createElement("button");b.className="cell"+(mask[i]?" lock":"")+(i===sel?" sel":"");b.textContent=v||"";b.disabled=mask[i]||done;b.onclick=()=>{sel=i;render()};$("grid").appendChild(b)});
+  $("pad").innerHTML="";
+  for(let n=1;n<=9;n++){const b=document.createElement("button");b.textContent=n;b.disabled=done;b.onclick=()=>put(n);$("pad").appendChild(b)}
+  const del=document.createElement("button");del.textContent="⌫";del.disabled=done;del.onclick=()=>put(0);$("pad").appendChild(del);
+}
+$("nw").onclick=newGame;
+$("tm").onclick=()=>{timed=!timed;newGame()};
+newGame();
+</script>
+<script src="ayuda.js" data-juego="cuadrado-magico"></script>
+</body></html>

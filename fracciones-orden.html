@@ -1,0 +1,87 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fracciones en orden</title><style>
+:root{--bg:#f4f1ea;--panel:#fffdf8;--ink:#22201c;--mute:#756f64;--line:#d9d2c3;--accent:#22201c}
+@media (prefers-color-scheme:dark){:root{--bg:#151412;--panel:#201e1b;--ink:#efebe2;--mute:#9a9486;--line:#38342d;--accent:#efebe2}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 Georgia,serif;display:flex;justify-content:center}
+main{width:100%;max-width:520px;padding:18px 16px 40px}
+h1{font-size:1.7rem;margin:6px 0 2px}
+.back{color:var(--mute);font-size:.9rem;text-decoration:none}
+.stats{color:var(--mute);font-size:.9rem;margin:4px 0;text-align:center}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;justify-content:center}
+button{font:inherit;padding:8px 14px;border-radius:999px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+button[aria-pressed=true]{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+button:disabled{opacity:.4;cursor:default}
+.frs{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:14px 0}
+.fr{min-width:84px;padding:14px 10px;font:1.5rem Georgia,serif;border-radius:14px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink)}
+.fr.on{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.order{min-height:1.6em;text-align:center;color:var(--mute);margin:6px 0}
+.msg{min-height:1.4em;text-align:center;color:var(--mute);margin:8px 0}
+</style></head><body><main>
+<a class="back" href="index.html">← Juegos de lógica</a>
+<h1>Fracciones en orden</h1>
+<p class="stats" id="st"></p>
+<div class="bar" id="lv"></div>
+<div class="bar"><button id="tm" aria-pressed="false">Contrarreloj</button><button id="nw">Nuevo</button></div>
+<p class="stats">Toca las fracciones de menor a mayor. Vuelve a tocar una para quitarla.</p>
+<div class="frs" id="frs"></div>
+<p class="order" id="order"></p>
+<div class="bar"><button id="clr">Borrar</button><button id="ck">Comprobar</button></div>
+<p class="msg" id="msg"></p>
+<p class="stats" id="t"></p>
+</main>
+<script>
+const KEY="fracciones-lg";
+const $=id=>document.getElementById(id);
+const COUNT=[3,4,5], DENS=[[2,3,4,6],[4,5,6,8],[6,8,10,12]];
+let lvl=1,F=[],sel=[],done=false,timed=false,tmr=null,t=0;
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const val=f=>f.p/f.q;
+
+function wins(){try{return JSON.parse(localStorage.getItem(KEY)||'{"w":0}').w||0}catch(e){return 0}}
+function addWin(){try{localStorage.setItem(KEY,JSON.stringify({w:wins()+1}))}catch(e){}}
+function stop(){clearInterval(tmr);tmr=null}
+function tick(){$("t").textContent=timed?"⏱ "+t+" s":""}
+function start(){stop();if(!timed){tick();return}t=60;tick();tmr=setInterval(()=>{t--;tick();if(t<=0){stop();done=true;$("msg").textContent="Se acabó el tiempo. La orden era: "+answerText()+".";render()}},1000)}
+function answerText(){return [...F].sort((a,b)=>val(a)-val(b)).map(f=>f.p+"/"+f.q).join(" < ")}
+function newGame(){
+  const n=COUNT[lvl],dens=DENS[lvl];
+  F=[];
+  let guard=0;
+  while(F.length<n&&guard++<5000){
+    const q=pick(dens),p=1+Math.floor(Math.random()*(q-1));
+    if(F.some(f=>f.p*q===p*f.q))continue; // evita fracciones de igual valor
+    F.push({p,q});
+  }
+  sel=[];done=false;$("msg").textContent="";start();render();
+}
+function toggle(i){
+  if(done)return;
+  const k=sel.indexOf(i);
+  if(k>=0)sel.splice(k,1);else sel.push(i);
+  $("msg").textContent="";render();
+}
+function check(){
+  if(done)return;
+  if(sel.length<F.length)return $("msg").textContent="Ordena todas las fracciones antes de comprobar.";
+  const ok=sel.every((x,k)=>k===0||val(F[sel[k-1]])<val(F[x]));
+  if(ok){done=true;stop();addWin();$("msg").textContent="¡Muy bien! Orden correcto.";render()}
+  else $("msg").textContent="Ese orden no es el correcto. Revisa y vuelve a comprobar.";
+}
+function render(){
+  $("st").textContent="Ganadas: "+wins();
+  $("lv").innerHTML="";
+  ["Fácil","Medio","Difícil"].forEach((tx,k)=>{const b=document.createElement("button");b.textContent=tx;b.setAttribute("aria-pressed",String(lvl===k));b.onclick=()=>{lvl=k;newGame()};$("lv").appendChild(b)});
+  $("tm").setAttribute("aria-pressed",String(timed));
+  const box=$("frs");box.innerHTML="";
+  F.forEach((f,i)=>{const b=document.createElement("button");b.className="fr"+(sel.includes(i)?" on":"");b.textContent=f.p+"/"+f.q;b.disabled=done;b.onclick=()=>toggle(i);box.appendChild(b)});
+  $("order").textContent=sel.length?"Tu orden: "+sel.map(i=>F[i].p+"/"+F[i].q).join(" < "):"";
+  $("ck").disabled=done;$("clr").disabled=done;
+}
+$("ck").onclick=check;
+$("clr").onclick=()=>{if(!done){sel=[];$("msg").textContent="";render()}};
+$("nw").onclick=newGame;
+$("tm").onclick=()=>{timed=!timed;newGame()};
+newGame();
+</script>
+<script src="ayuda.js" data-juego="fracciones-orden"></script>
+</body></html>

@@ -184,17 +184,86 @@
       ejemplo: "2 · 4 · 6 · 9 · 10 · 12 · 14: todos van de 2 en 2, así que sobra el 9 (debería ser 8).",
       niveles: "Fácil: 6 o 7 números con sumas, multiplicaciones y múltiplos. Medio: 7 u 8 números, con saltos crecientes, cuadrados, primos, Fibonacci, series mezcladas y propiedades de las cifras. Difícil: 8 números, con cubos y patrones más raros, y tres de las ocho cadenas tienen dos intrusos. Contrarreloj: 12 segundos por cadena (25 si hay dos intrusos o en patrón inverso), y tras varios aciertos seguidos el tiempo baja hasta 3 segundos. El reto del día es de nivel medio y sin tiempo, y tu racha sube un día cada vez que lo completas sin ningún error."
     },
+    "cuadrado-magico": {
+      titulo: "Cuadrado mágico",
+      objetivo: "Rellenar el cuadrado de 3×3 con los números del 1 al 9, sin repetir ninguno, para que todas las filas, columnas y diagonales sumen 15.",
+      pasos: [
+        "Toca una casilla vacía. Las casillas en negrita vienen dadas y no se pueden cambiar.",
+        "Toca un número del teclado de abajo para colocarlo en la casilla seleccionada. El botón ⌫ la vacía.",
+        "Cada número solo puede usarse una vez. Si repites uno, el cuadrado no puede estar bien.",
+        "Cuando las nueve casillas estén llenas, el juego comprueba el resultado. Si no cuadra, te lo indica y puedes corregir.",
+        "Ganas cuando las tres filas, las tres columnas y las dos diagonales suman 15. En contrarreloj tienes 2 minutos."
+      ],
+      ejemplo: "En cualquier cuadrado mágico de este tipo el 5 está en el centro. Las casillas opuestas respecto al centro suman 10: por ejemplo, el 2 y el 8, o el 4 y el 6.",
+      niveles: "Fácil: 6 casillas dadas. Medio: 5 casillas dadas. Difícil: 4 casillas dadas. En contrarreloj, si se acaban los 2 minutos, pierdes."
+    },
+    "caballeros-mentirosos": {
+      titulo: "Caballeros y mentirosos",
+      objetivo: "Averiguar quién dice la verdad y quién miente a partir de lo que afirma cada persona.",
+      pasos: [
+        "Hay varias personas (Ana, Beto, Carla y Dani). Los caballeros siempre dicen la verdad y los mentirosos siempre mienten.",
+        "Cada persona hace una afirmación sobre otra: «X es caballero» o «X es mentiroso».",
+        "Para cada persona, marca si es Caballero o Mentiroso. Si vuelves a pulsar la misma opción, se quita la marca.",
+        "Cuando las hayas marcado todas, pulsa «Comprobar». Si alguna afirmación no encaja con tus respuestas, el juego te lo dice.",
+        "Ganas cuando tus respuestas son coherentes con todas las afirmaciones. Para resolverlo, prueba suposiciones y mira si se contradicen."
+      ],
+      ejemplo: "Ana dice: «Beto es mentiroso». Si Ana es caballero, Beto es mentiroso. Si Ana es mentirosa, Beto es caballero. Hay que mirar el resto de afirmaciones para saber cuál de las dos cosas es cierta.",
+      niveles: "Fácil: 2 personas. Medio: 3 personas. Difícil: 4 personas. Cada enigma tiene una única solución. En contrarreloj tienes 2 minutos."
+    },
+    "balanza": {
+      titulo: "Balanza",
+      objetivo: "Encontrar la moneda más pesada con el menor número de pesadas.",
+      pasos: [
+        "Una moneda pesa más que las demás. Todas las demás pesan lo mismo.",
+        "Toca una moneda para ponerla a la izquierda (I). Vuelve a tocarla para ponerla a la derecha (D) y otra vez para quitarla.",
+        "Pulsa «Pesar» para ver qué lado pesa más o si pesan lo mismo. Hay que poner el mismo número de monedas a cada lado.",
+        "Cada pesada gasta una de las que tienes disponibles. Los resultados aparecen en el historial.",
+        "Para dar la respuesta, pulsa «Adivinar» y toca la moneda que crees pesada. Si fallas, puedes seguir probando sin perder nada, y adivinar no gasta pesadas.",
+        "Ganas si encuentras la moneda pesada. En contrarreloj tienes 2 minutos."
+      ],
+      ejemplo: "Con 3 monedas y una sola pesada: pon la 1 a la izquierda y la 2 a la derecha. Si la izquierda pesa más, es la 1; si pesa más la derecha, es la 2; si pesan lo mismo, es la 3.",
+      niveles: "Fácil: 3 monedas y 1 pesada. Medio: 9 monedas y 2 pesadas. Difícil: 27 monedas y 3 pesadas. Cada pesada permite dividir el grupo en tres partes, por eso 3 pesadas bastan para 27 monedas."
+    },
+    "calculo-contrarreloj": {
+      titulo: "Cálculo contrarreloj",
+      objetivo: "Resolver 10 operaciones mentales en 60 segundos.",
+      pasos: [
+        "Pulsa «Empezar». Aparece una operación: escribe el resultado en la casilla.",
+        "Responde con «Responder» o pulsando Intro. Te dirá si era correcto y, si no, cuál era el resultado.",
+        "Pasa automáticamente a la siguiente operación. El contador muestra los segundos que te quedan.",
+        "Ganas la ronda si aciertas 8 o más de las 10. Si se acaba el tiempo, la ronda termina y no cuenta como ganada, aunque tengas 8 aciertos.",
+        "Puedes pulsar «Reiniciar» en cualquier momento para empezar otra ronda."
+      ],
+      ejemplo: "Para calcular 17 × 12 puedes hacer 17 × 10 = 170 y 17 × 2 = 34, y sumar: 204. Para el 20 % de un número, basta con dividirlo entre 5.",
+      niveles: "Fácil: sumas y restas hasta 20. Medio: multiplicaciones hasta 12 × 12, divisiones exactas y sumas de dos cifras. Difícil: multiplicaciones de dos cifras por una, divisiones, operaciones con paréntesis y el 20 % de un número."
+    },
+    "fracciones-orden": {
+      titulo: "Fracciones en orden",
+      objetivo: "Ordenar un grupo de fracciones de menor a mayor.",
+      pasos: [
+        "Verás varias fracciones desordenadas. Ninguna tiene el mismo valor que otra.",
+        "Toca la fracción que crees más pequeña, luego la siguiente más pequeña, y así hasta completar la lista de menor a mayor.",
+        "En «Tu orden» ves la secuencia que llevas. Para quitar una fracción de la lista, vuelve a tocarla.",
+        "«Borrar» vacía la lista para empezar de nuevo.",
+        "Pulsa «Comprobar» cuando estén todas colocadas. Si el orden no es correcto, te lo indica y puedes corregirlo.",
+        "Ganas si el orden es correcto. En contrarreloj tienes 1 minuto; si se acaba, se muestra el orden correcto."
+      ],
+      ejemplo: "Si dos fracciones tienen el mismo denominador, la que tiene el numerador más grande es la mayor. Para comparar 3/4 y 5/6, pásalas a un denominador común: 9/12 y 10/12. Como 9 es menor que 10, 3/4 es menor que 5/6.",
+      niveles: "Fácil: 3 fracciones con denominadores 2, 3, 4 o 6. Medio: 4 fracciones con denominadores 4, 5, 6 u 8. Difícil: 5 fracciones con denominadores 6, 8, 10 o 12."
+    },
     "letras-zen": {
       titulo: "Letras Zen",
       objetivo: "Encontrar todas las palabras ocultas uniendo letras de la rueda.",
       pasos: [
-        "Arrastra el dedo (o el ratón) por las letras de la rueda para formar una palabra. Al soltar, se comprueba.",
-        "Las casillas vacías marcan la longitud de cada palabra. Si la palabra es correcta, se rellena en su hueco; si no, aparece «Esa no está».",
+        "Arrastra el dedo (o el ratón) por las letras de la rueda para formar una palabra. Al soltar, se comprueba. Si vuelves sobre la letra anterior, la quitas.",
+        "Las casillas vacías marcan la longitud de cada palabra. Si la palabra es correcta, se rellena en su hueco; si no, aparece «Esa no está». Las palabras de menos de 3 letras no cuentan.",
         "Dentro de una palabra cada letra de la rueda se usa una sola vez, pero una misma letra puede aparecer en varias palabras.",
-        "«Reordenar letras» cambia la posición de las letras en la rueda, por si te ayuda a verlas de otra forma."
+        "«Reordenar» cambia la posición de las letras en la rueda, por si te ayuda a verlas de otra forma.",
+        "Cada palabra suma tantos puntos como letras tiene. El récord de cada nivel se guarda en este navegador.",
+        "Cuando encuentras todas las palabras aparece la enhorabuena. «Nueva ronda» genera otro tablero."
       ],
       ejemplo: "Con las letras A, M, O, R, S y E puedes formar MARES: arrastra M, A, R, E y S en ese orden.",
-      niveles: "No hay niveles ni tiempo. Cada día hay un reto nuevo, y el progreso se guarda en este navegador. «Zen» desvela la primera letra de cada palabra; «Pistas» desvela hasta 6 letras aleatorias."
+      niveles: "Fácil, Medio y Difícil: la palabra base tiene 5, 6 o 7 letras, y el tablero incluye todas las palabras que se pueden formar con sus letras. No hay tiempo. «Zen» muestra la primera letra de cada palabra; «Pistas» desvela hasta 6 letras al azar."
     }
   };
 

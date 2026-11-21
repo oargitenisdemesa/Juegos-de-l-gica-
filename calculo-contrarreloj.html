@@ -1,0 +1,104 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cálculo contrarreloj</title><style>
+:root{--bg:#f4f1ea;--panel:#fffdf8;--ink:#22201c;--mute:#756f64;--line:#d9d2c3;--accent:#22201c;--ok:#4f7a4f;--bad:#a1443c}
+@media (prefers-color-scheme:dark){:root{--bg:#151412;--panel:#201e1b;--ink:#efebe2;--mute:#9a9486;--line:#38342d;--accent:#efebe2;--ok:#7fb27f;--bad:#d9796f}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 Georgia,serif;display:flex;justify-content:center}
+main{width:100%;max-width:520px;padding:18px 16px 40px}
+h1{font-size:1.7rem;margin:6px 0 2px}
+.back{color:var(--mute);font-size:.9rem;text-decoration:none}
+.stats{color:var(--mute);font-size:.9rem;margin:4px 0;text-align:center}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;justify-content:center}
+button{font:inherit;padding:8px 14px;border-radius:999px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+button[aria-pressed=true]{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+button:disabled{opacity:.4;cursor:default}
+.panel{background:var(--panel);border:1.5px solid var(--line);border-radius:14px;padding:22px 16px;text-align:center;margin-top:10px}
+.q{font-size:2.2rem;margin:8px 0 14px}
+input{font:inherit;font-size:1.6rem;width:9em;text-align:center;padding:8px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
+.msg{min-height:1.4em;text-align:center;margin:10px 0;color:var(--mute)}
+.ok{color:var(--ok)}.bad{color:var(--bad)}
+</style></head><body><main>
+<a class="back" href="index.html">← Juegos de lógica</a>
+<h1>Cálculo contrarreloj</h1>
+<p class="stats">10 operaciones en 60 segundos. Gana con 8 o más aciertos.</p>
+<p class="stats" id="st"></p>
+<div class="bar" id="lv"></div>
+<div class="panel">
+  <p class="stats" id="prog"></p>
+  <div class="q" id="q">Pulsa Empezar</div>
+  <input id="a" type="number" inputmode="numeric" autocomplete="off" disabled>
+  <div class="bar"><button id="go">Empezar</button><button id="ok" disabled>Responder</button></div>
+  <p class="msg" id="msg"></p>
+  <p class="stats" id="t"></p>
+</div>
+</main>
+<script>
+const KEY="calculo-lg";
+const $=id=>document.getElementById(id);
+let lvl=2,qs=[],i=0,score=0,left=60,tmr=null,running=false;
+
+function wins(){try{return JSON.parse(localStorage.getItem(KEY)||'{"w":0}').w||0}catch(e){return 0}}
+function addWin(){try{localStorage.setItem(KEY,JSON.stringify({w:wins()+1}))}catch(e){}}
+const r=n=>1+Math.floor(Math.random()*n);
+function make(l){
+  if(l===1){
+    if(Math.random()<.5){const a=r(20),b=r(20);return{t:`${a} + ${b}`,a:a+b}}
+    const a=r(20),b=r(a);return{t:`${a} − ${b}`,a:a-b};
+  }
+  if(l===2){
+    const k=Math.random();
+    if(k<.4){const a=r(12),b=r(12);return{t:`${a} × ${b}`,a:a*b}}
+    if(k<.7){const b=r(12),c=r(12);return{t:`${b*c} ÷ ${b}`,a:c}}
+    const a=r(90)+10,b=r(90)+10;return{t:`${a} + ${b}`,a:a+b};
+  }
+  const k=Math.random();
+  if(k<.3){const a=r(20)+10,b=r(8)+2;return{t:`${a} × ${b}`,a:a*b}}
+  if(k<.5){const b=r(12)+1,c=r(18)+2;return{t:`${b*c} ÷ ${b}`,a:c}}
+  if(k<.75){const a=r(20),b=r(20),c=r(4)+2;return{t:`(${a} + ${b}) × ${c}`,a:(a+b)*c}}
+  const N=5*(r(40)+1);return{t:`el 20 % de ${N}`,a:N/5};
+}
+function stop(){clearInterval(tmr);tmr=null}
+function tickT(){$("t").textContent="⏱ "+left+" s"}
+function start(){
+  qs=Array.from({length:10},()=>make(lvl));i=0;score=0;left=60;running=true;
+  $("a").disabled=false;$("ok").disabled=false;$("go").textContent="Reiniciar";
+  $("msg").textContent="";stop();tickT();
+  tmr=setInterval(()=>{left--;tickT();if(left<=0)finish(true)},1000);
+  show();$("a").focus();
+}
+function show(){
+  $("q").textContent=i<qs.length?qs[i].t+" = ":"";
+  $("prog").textContent="Pregunta "+Math.min(i+1,10)+" de 10 · Aciertos: "+score;
+  $("a").value="";
+}
+function answer(){
+  if(!running)return;
+  const v=$("a").value;if(v==="")return;
+  const ok=Number(v)===qs[i].a;
+  if(ok)score++;
+  $("msg").innerHTML=ok?"<span class='ok'>Correcto</span>":"<span class='bad'>Era "+qs[i].a+"</span>";
+  i++;
+  if(i>=qs.length)return finish(false);
+  show();$("a").focus();
+}
+function finish(timeout){
+  running=false;stop();
+  $("a").disabled=true;$("ok").disabled=true;$("go").textContent="Nueva ronda";
+  $("q").textContent="—";
+  const won=score>=8&&!timeout;
+  if(won)addWin();
+  $("msg").textContent=(timeout?"Se acabó el tiempo. ":"")+"Has acertado "+score+" de "+qs.length+(won?". ¡Ronda ganada!":".");
+  $("prog").textContent="Aciertos: "+score;
+  $("st").textContent="Ganadas: "+wins();
+}
+function render(){
+  $("st").textContent="Ganadas: "+wins();
+  $("lv").innerHTML="";
+  ["Fácil","Medio","Difícil"].forEach((tx,k)=>{const b=document.createElement("button");b.textContent=tx;b.setAttribute("aria-pressed",String(lvl===k+1));b.onclick=()=>{lvl=k+1;if(!running)$("msg").textContent="";render()};$("lv").appendChild(b)});
+}
+$("go").onclick=start;
+$("ok").onclick=answer;
+$("a").addEventListener("keydown",e=>{if(e.key==="Enter")answer()});
+render();
+</script>
+<script src="ayuda.js" data-juego="calculo-contrarreloj"></script>
+</body></html>
