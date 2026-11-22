@@ -105,25 +105,30 @@ button.btn:disabled{opacity:.45;cursor:default}
 </div>
 
 <script>
-// Diccionario en mayúsculas y sin acentos. Cada ronda elige una palabra base
-// y el juego busca todas las palabras del diccionario que se pueden formar
-// con sus letras. Así cada visita genera un tablero distinto.
-const DICT = ["SOL","MAR","RIO","PAN","SAL","ASA","ORO","OSO","TIO","ROCA",
-  "AMOR","MESA","ROSA","MORA","CAMA","CASA","LOBO","LUNA","NATA","NOTA","TOCA","MAPA","PALA","LAMA","COLA","ORCA","COTA","CARA","ALMA","LEMA","MANO","LANA","TORO","ROTO","TOMA","MAMA","PAPA","SACO","PATO","SALA","RATA","TELA","LATA","MATA","PESO",
-  "MARES","CALOR","TOCAR","PERRO","GATO","LIBRO","LAPIZ","SILLA","NUBES","CORAL","MARCO","CARTA","PLATA","PLANO","CLAVO","SALTO","CAMPO","AMIGO","LLAMA",
-  "PALOMA","PLANTA","CAMINO","ZAPATO","CAMISA","PUERTA","MARINO","TEATRO","GRANJA","VIAJAR",
-  "PLANETA","PALABRA","CAMINOS","CORAZON","TORTUGA","MANZANA","BOTELLA","CABALLO","VENTANA","NARANJA","CARTERA","CAMELLO","RELOJES","LAMPARA","SOLDADO","ESCUELA"];
+// Diccionario en mayúsculas y sin acentos. Cada ronda elige al azar una palabra
+// base de la longitud del nivel y el juego busca todas las palabras del
+// diccionario que se pueden formar con sus letras. Así cada partida es distinta.
+const DICT = [
+  // 3 letras
+  "SOL","MAR","RIO","PAN","SAL","ASA","ORO","OSO","TIO","ROCA","SAL","LUZ","PEZ","VID","RED","DIA","HOY","FIN","PIE","MAL","BIEN","TEZ","ANA","ISLA","OLA","ARE","ERA","TAZA","MES","NIÑO",
+  // 4 letras
+  "AMOR","MESA","ROSA","MORA","CAMA","CASA","LOBO","LUNA","NATA","NOTA","TOCA","MAPA","PALA","LAMA","COLA","ORCA","COTA","CARA","ALMA","LEMA","MANO","LANA","TORO","ROTO","TOMA","MAMA","PAPA","SACO","PATO","SALA","RATA","TELA","LATA","MATA","PESO","NIDO","DADO","RANA","SAPO","PERA","UVAS","CAFE","RAYO","NUBE","VASO","FOCA","MOTO","TREN","BOTA","PLUMA","ARCO","LUZ","ALGA","RISA","VELA","MIEL","TIZA","HIELO","GOTA","SELVA","RUTA","CUNA","BESO","PAVO","TIGRE",
+  // 5 letras
+  "MARES","CALOR","TOCAR","PERRO","GATO","LIBRO","LAPIZ","SILLA","NUBES","CORAL","MARCO","CARTA","PLATA","PLANO","CLAVO","SALTO","CAMPO","AMIGO","LLAMA","MONTE","PIANO","RISAS","TORRE","NARIZ","SERPI","CARRO","PLAYA","VIENTO","BARCO","CALLE","MOLDE","PUNTO","VERDE","FLORA","BAILE","CANTO","DULCE","FRESA","HORNO","LLAVE","GRANO","MIEDO","NADAR","PINTA","RELOJ","SUEÑO","TIENDA","PORTA","BRAZO","ROBOT","TIZON","AZUCAR","ANIMAL","CAMION",
+  // 6 letras
+  "PALOMA","PLANTA","CAMINO","ZAPATO","CAMISA","PUERTA","MARINO","TEATRO","GRANJA","VIAJAR","ESPEJO","CASCADA","MANTEL","BOLSAS","CORONA","ESCOBA","MONEDA","PAJARO","PERLAS","RAMAJE","SENDAS","TRIGAL","VOLCAN","BALCON","CARBON","ESTRELLA","PUENTE","RELAMPAGO","SOMBRA","TERNURA","PLATAS","ARDILLA","BRUJULA","CORDEL","FRESAS","GIRASOL","HORMIGA","LECHUGA","MARINERO","NARANJO","OLIVAR","PASTEL","REFUGIO","SALMON","TORTAS","VENENO","CERDO","LAGARTO","MEDALLA","PIRATA","ALMENDRA","CASTILLO"
+];
 
 const LEVEL_KEY = "letraszen-nivel";
 const BEST_KEY = "letraszen-records";
-const LAST_KEY = "letraszen-ultima";
+const LAST_KEY = "letraszen-ultimas";
 
 let levelLen = 6;
 try { levelLen = +localStorage.getItem(LEVEL_KEY) || 6; } catch (e) {}
 let best = {};
 try { best = JSON.parse(localStorage.getItem(BEST_KEY) || "{}"); } catch (e) {}
-let lastBase = null;
-try { lastBase = localStorage.getItem(LAST_KEY); } catch (e) {}
+let lastBases = [];
+try { lastBases = JSON.parse(localStorage.getItem(LAST_KEY) || "[]"); } catch (e) {}
 
 const wordsEl = document.getElementById("words");
 const wheelEl = document.getElementById("wheel");
@@ -144,16 +149,19 @@ const pick = a => a[Math.floor(Math.random() * a.length)];
 function flash(text) { msgEl.textContent = text; clearTimeout(flash.t); flash.t = setTimeout(() => msgEl.textContent = "", 1600); }
 
 function newRound() {
-  const bases = DICT.filter(w => w.length === levelLen && w !== lastBase);
+  // Evita repetir las últimas 8 bases jugadas y elige con aleatoriedad real.
+  let bases = [...new Set(DICT.filter(w => w.length === levelLen))].filter(w => !lastBases.includes(w));
+  if (bases.length < 5) bases = [...new Set(DICT.filter(w => w.length === levelLen))];
+  shuffle(bases);
   let base = null, words = [];
-  for (let t = 0; t < 200; t++) {
-    base = pick(bases);
-    const pool = countOf(base);
-    words = DICT.filter(w => w.length >= 3 && formable(w, pool));
-    if (words.length >= 4) break;
+  for (const cand of bases) {
+    const pool = countOf(cand);
+    const found = [...new Set(DICT.filter(w => w.length >= 3 && formable(w, pool)))];
+    if (found.length >= 4) { base = cand; words = found; break; }
   }
-  lastBase = base;
-  try { localStorage.setItem(LAST_KEY, base); } catch (e) {}
+  if (!base) { base = pick(DICT.filter(w => w.length === levelLen)); words = DICT.filter(w => w.length >= 3 && formable(w, countOf(base))); }
+  lastBases = [base, ...lastBases.filter(b => b !== base)].slice(0, 8);
+  try { localStorage.setItem(LAST_KEY, JSON.stringify(lastBases)); } catch (e) {}
   words.sort((a, b) => a.length - b.length || (a < b ? -1 : 1));
   state = {
     base, words,
